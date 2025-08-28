@@ -1,0 +1,34 @@
+<th:block th:with="title='Admin Dashboard'"
+          th:replace="layout/layout :: ~{::section}">
+  <section>
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="card text-white bg-danger">
+          <div class="card-body">
+            <div class="fs-5 fw-semibold">장애/경고</div>
+            <div class="text-medium-emphasis small">현재 0건</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card text-white bg-success">
+          <div class="card-body">
+            <div class="fs-5 fw-semibold">신규 가입</div>
+            <div class="text-medium-emphasis small">오늘 12명</div>
+          </div>
+        </div>
+      </div>
+      <!-- 필요 카드 추가 -->
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">최근 활동</div>
+      <div class="card-body">
+        <ul class="mb-0">
+          <li>사용자 권한 변경</li>
+          <li>시스템 점검 예약</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</th:block>

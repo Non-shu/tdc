@@ -1,0 +1,34 @@
+<th:block th:fragment="sidebar">
+  <div class="sidebar sidebar-dark border-end" id="sidebar">
+    <div class="sidebar-brand d-none d-md-flex">
+      <!-- 로고: SVG/PNG 아무거나 -->
+      <img th:src="@{/assets/brand/thedream.svg}" alt="더드림" class="sidebar-brand-full" style="height:32px">
+    </div>
+
+    <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/}">
+          <i class="nav-icon cil-speedometer"></i> Home
+          <span class="badge bg-info ms-auto">NEW</span>
+        </a>
+      </li>
+
+      <li class="nav-title" sec:authorize="hasRole('ADMIN')">관리자</li>
+      <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+        <a class="nav-link" th:href="@{/admin/users}">
+          <i class="nav-icon cil-people"></i> 사용자 관리
+        </a>
+      </li>
+
+      <li class="nav-title">업무</li>
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/tasks}">
+          <i class="nav-icon cil-task"></i> 작업 목록
+        </a>
+      </li>
+    </ul>
+    <button class="btn-close d-lg-none" type="button"
+            aria-label="Close"
+            onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
+  </div>
+</th:block>

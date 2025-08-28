@@ -1,0 +1,31 @@
+<th:block th:with="title='Home'"
+          th:replace="layout/layout :: ~{::section}">
+  <section>
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="card text-white bg-primary">
+          <div class="card-body">
+            <div class="fs-5 fw-semibold">내 알림</div>
+            <div class="text-medium-emphasis small">오늘 처리할 일 3건</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="fs-5 fw-semibold">최근 공지</div>
+            <div class="text-medium-emphasis small">보안 점검 안내</div>
+          </div>
+        </div>
+      </div>
+      <!-- 필요 카드 추가 -->
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">내 업무</div>
+      <div class="card-body">
+        <p class="text-medium-emphasis">담당 이슈/요청 리스트 요약</p>
+      </div>
+    </div>
+  </section>
+</th:block>
