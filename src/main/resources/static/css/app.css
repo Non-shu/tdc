@@ -1,1 +1,20 @@
 @charset "UTF-8";
+/* 기본(일반 사용자) */
+:root {
+  --sidebar-bg: #f8fbff;
+  --sidebar-link: #0d47a1;
+  --sidebar-active-bg: #e7f0ff;
+}
+
+/* 관리자(다크 느낌) */
+.theme-admin {
+  --sidebar-bg: #20232a;
+  --sidebar-link: #cbd5e1;
+  --sidebar-active-bg: #2b2f38;
+}
+
+/* 실제 적용 */
+.sidebar { background: var(--sidebar-bg); }
+.sidebar .nav-link { color: var(--sidebar-link); }
+.sidebar .nav-link.active { background: var(--sidebar-active-bg); }
+.sidebar-brand-full { color:#fff; } /* 로고가 SVG+currentColor일 때 */
