@@ -1,40 +1,157 @@
 <!doctype html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title th:text="${title} ?: '더드림'">더드림</title>
-
-  <link th:href="@{/assets/css/style.css}" rel="stylesheet">
-  <link th:href="@{/assets/css/app-theme.css}" rel="stylesheet">
-
-  <!-- 파비콘(있으면) -->
-  <link rel="icon" th:href="@{/assets/favicon/favicon.ico}">
+<head th:replace="fragments/head :: commonHead(~{::title})">
+  <title>더드림</title>
 </head>
-
 <body th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? 'theme-admin' : 'theme-user'">
-  <!-- 사이드바 -->
-  <div th:replace="layout/sidebar :: sidebar"></div>
 
-  <!-- 메인 래퍼 -->
+  <!-- ===== 사이드바 (sidebar.html 내용을 인라인 통합) ===== -->
+  <div class="sidebar sidebar-dark border-end" id="sidebar">
+    <div class="sidebar-brand d-none d-md-flex">
+      <img th:src="@{/assets/brand/thedream.svg}" alt="더드림" class="sidebar-brand-full" style="height:32px">
+    </div>
+
+    <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
+      <!-- 홈 -->
+      <li class="nav-item">
+        <a class="nav-link"
+           th:classappend="${active} == 'dashboard' ? ' active' : ''"
+           th:href="@{/}">
+          <svg class="nav-icon"><use th:href="@{/assets/icons/free.svg#cil-speedometer}"></use></svg>
+          Home
+        </a>
+      </li>
+
+      <!-- 일정 -->
+      <li class="nav-group" th:classappend="${#strings.startsWith(active,'schedule:')} ? ' show' : ''">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/assets/icons/free.svg#cil-calendar}"></use></svg>
+          일정
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'schedule:calendar' ? ' active' : ''"
+               th:href="@{/schedule}">
+              캘린더
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 자료실 -->
+      <li class="nav-group" th:classappend="${#strings.startsWith(active,'repo:')} ? ' show' : ''">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/assets/icons/free.svg#cil-folder-open}"></use></svg>
+          자료실
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'repo:files' ? ' active' : ''"
+               th:href="@{/repo/files}">
+              파일함
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'repo:templates' ? ' active' : ''"
+               th:href="@{/repo/templates}">
+              양식/템플릿
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 결재 -->
+      <li class="nav-group" th:classappend="${#strings.startsWith(active,'approval:')} ? ' show' : ''">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/assets/icons/free.svg#cil-check-circle}"></use></svg>
+          결재
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'approval:submit' ? ' active' : ''"
+               th:href="@{/approval/submit}">
+              문서작성
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'approval:inbox' ? ' active' : ''"
+               th:href="@{/approval/inbox}">
+              결재함
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 세무 -->
+      <li class="nav-group" th:classappend="${#strings.startsWith(active,'tax:')} ? ' show' : ''">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/assets/icons/free.svg#cil-dollar}"></use></svg>
+          세무
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'tax:invoice' ? ' active' : ''"
+               th:href="@{/tax/invoices}">
+              세금계산서
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"
+               th:classappend="${active} == 'tax:report' ? ' active' : ''"
+               th:href="@{/tax/reports}">
+              신고/리포트
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <button class="btn-close d-lg-none" type="button" aria-label="Close"
+            onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
+  </div>
+  <!-- ===== //사이드바 ===== -->
+
+  <!-- ===== 메인 래퍼 ===== -->
   <div class="wrapper d-flex flex-column min-vh-100 bg-light">
-    <!-- 헤더 -->
-    <header th:replace="layout/header :: header"></header>
+    <!-- 헤더 (header.html 내용을 인라인 통합) -->
+    <header class="header header-sticky mb-4">
+      <div class="container-fluid">
+        <button class="header-toggler px-md-0 me-md-3" type="button"
+                onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()">
+          <i class="cil-menu"></i>
+        </button>
+        <a class="header-brand d-md-none" th:href="@{/}">더드림</a>
+
+        <ul class="header-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+        </ul>
+      </div>
+      <div class="header-divider"></div>
+    </header>
 
     <!-- 본문 -->
     <div class="body flex-grow-1 px-3">
-      <div class="container-lg" th:insert="${content}"> <!-- 페이지 본문 렌더 -->
-        <!-- 페이지에서 section만 넘겨주면 됨 -->
+      <div class="container-lg" th:insert="~{::section}">
+        <!-- 각 페이지에서 <section>...</section> 만 넘기면 여기로 삽입 -->
       </div>
     </div>
 
-    <!-- 푸터 -->
-    <footer th:replace="layout/footer :: footer"></footer>
+    <!-- 푸터 (footer.html 내용을 인라인 통합) -->
+    <footer class="footer">
+      <div><strong>(주)더드림</strong> © <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2025</span></div>
+      <div class="ms-auto">Built with CoreUI + Spring Boot</div>
+    </footer>
   </div>
+  <!-- ===== //메인 래퍼 ===== -->
 
-  <!-- CoreUI/JS (dist에서 가져온 번들) -->
+  <!-- CoreUI / App JS -->
   <script th:src="@{/assets/js/coreui.bundle.min.js}"></script>
   <script th:src="@{/assets/js/app.js}"></script>
 </body>

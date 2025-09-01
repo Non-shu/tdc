@@ -13,7 +13,7 @@ public class HomeController {
 		model.addAttribute("active", "dashboard");
 		boolean isAdmin = auth != null && auth.getAuthorities().stream()
 				.anyMatch(a->a.getAuthority().equals("ROLE_ADMIN"));
-		return isAdmin ? "views/admin.html" : "views/index.html";
+		return isAdmin ? "views/admin" : "views/index";
 	}
 	
 	@GetMapping("/approval")
@@ -22,4 +22,8 @@ public class HomeController {
 		return "views/approval/list"; //결재관련 페이지 생성에정
 	}
 	
+	@GetMapping("/login")
+	public String login() {
+		return "views/login";
+	}	
 }
