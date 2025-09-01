@@ -1,15 +1,14 @@
-<!doctype html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="commonHead(title)">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title th:text="${title} ?: '더드림'">더드림</title>
+  <title th:text="${title} ?: 'The Dream'"></title>
 
-  <!-- CoreUI / App CSS (경로는 static/ 아래 기준) -->
-  <link th:href="@{/assets/css/style.css}" rel="stylesheet">
-  <link th:href="@{/assets/css/app-theme.css}" rel="stylesheet">
+  <!-- CoreUI 기본 CSS (네가 가진 /static/css/style.min.css) -->
+  <link rel="stylesheet" th:href="@{/css/style.min.css}"/>
 
-  <!-- 파비콘(있으면) -->
-  <link rel="icon" th:href="@{/assets/favicon/favicon.ico}">
+  <!-- simplebar (스크롤) -->
+  <link rel="stylesheet" th:href="@{/vendors/simplebar/css/simplebar.css}"/>
+
+  <!-- 파비콘 -->
+  <link rel="icon" th:href="@{/assets/favicon/favico.ico}"/>
 </head>
-</html>

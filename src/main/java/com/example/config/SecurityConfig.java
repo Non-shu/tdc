@@ -4,39 +4,62 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-	    http
-	      .authorizeHttpRequests(auth -> auth
-	          .requestMatchers("/login",
-	                           "/css/**","/js/**","/assets/**","/vendors/**").permitAll()
-	          .requestMatchers("/h2","/h2/**").permitAll()              // H2 콘솔 허용
-	          .anyRequest().authenticated()
-	      )
-	      .formLogin(login -> login
-	          .loginPage("/login")
-	          .loginProcessingUrl("/login")
-	          .defaultSuccessUrl("/admin", true)
-	          .permitAll()
-	      )
-	      .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout").permitAll())
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .headers(h -> h.frameOptions(f -> f.sameOrigin()))
 
-	      // ★ H2 콘솔은 프레임 필요 → sameOrigin 또는 disable
-	      .headers(h -> h.frameOptions(f -> f.sameOrigin()))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/login", "/error",
+                    "/css/**", "/js/**", "/images/**",
+                    "/vendors/**", "/assets/**", "/webjars/**",
+                    "/h2-console/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+            )
 
-	      // ★ CSRF는 H2 콘솔 경로만 예외
-	      .csrf(csrf -> csrf
-	          .ignoringRequestMatchers(new AntPathRequestMatcher("/h2/**"))
-	          .ignoringRequestMatchers(new AntPathRequestMatcher("/h2"))   // path=/h2일 때도 대비
-	      );
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/login?error")
+                .permitAll()
+            )
+            .httpBasic(b -> b.disable())
+            .logout(lo -> lo
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
+            );
 
-	    return http.build();
-	  }
-	}
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+    	UserDetails admin = User.withUsername("admin")
+    			.password(encoder.encode("admin123"))
+    			.roles("USER")
+    			.build();
+    	return new InMemoryUserDetailsManager(admin);
+    }
+}
