@@ -1,29 +1,54 @@
-<th:block th:replace="~{layout/layout :: frame(~{::section})}">
-  <section>
-    <div class="row g-4">
-      <div class="col-sm-6 col-lg-3">
-        <div class="card text-white bg-primary">
-          <div class="card-body">
-            <div class="fs-5 fw-semibold">내 알림</div>
-            <div class="text-medium-emphasis small">오늘 처리할 일 3건</div>
+<!doctype html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<section layout:fragment="content">
+
+  <!-- row-cols로 반응형 열 수를 명시: md부터 2열, lg부터 3열 -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+
+    <!-- 내 알림 -->
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">내 알림</h6>
+            <span class="badge text-bg-primary" th:text="${alarmCount}">0</span>
           </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="fs-5 fw-semibold">최근 공지</div>
-            <div class="text-medium-emphasis small">보안 점검 안내</div>
-          </div>
+          <ul class="mt-3 mb-0 small list-unstyled">
+            <li th:each="a:${alarms}" th:text="${a.title}">오늘 처리할 일</li>
+            <li th:if="${#lists.isEmpty(alarms)}" class="text-body-secondary">알림이 없습니다.</li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <div class="card mt-4">
-      <div class="card-header">내 업무</div>
-      <div class="card-body">
-        <p class="text-medium-emphasis">담당 이슈/요청 리스트 요약</p>
+    <!-- 최근 공지 -->
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-2">최근 공지</h6>
+          <ul class="small list-unstyled mb-0">
+            <li th:each="n:${notices}" th:text="${n.title}">보안 점검 안내</li>
+            <li th:if="${#lists.isEmpty(notices)}" class="text-body-secondary">등록된 공지가 없습니다.</li>
+          </ul>
+        </div>
       </div>
     </div>
-  </section>
-</th:block>
+
+    <!-- 내 업무 -->
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-2">내 업무</h6>
+        <p class="small text-body-secondary mb-3">담당 이슈/요청 리스트 요약</p>
+        <a th:href="@{/tasks}" class="btn btn-sm btn-outline-primary">바로가기</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</html>

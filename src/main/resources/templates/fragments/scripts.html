@@ -3,6 +3,12 @@
   <script th:src="@{/vendors/@coreui/coreui/js/coreui.bundle.min.js}"></script>
   <!-- simplebar -->
   <script th:src="@{/vendors/simplebar/js/simplebar.min.js}"></script>
-  <!-- 앱 스크립트 -->
-  <script th:src="@{/js/app.js}"></script>
+
+  <!-- Toast UI Editor (CDN) -->
+ <link rel="stylesheet" th:href="@{https://uicdn.toast.com/editor/latest/toastui-editor.min.css}">
+  <script th:src="@{https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js}"></script>
+  <script th:src="@{https://uicdn.toast.com/editor/latest/i18n/ko-kr.js}"></script>
+
+ <script th:src="@{/js/app.js}" defer></script>
+ 
 </th:block>

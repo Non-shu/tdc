@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+  <!-- ★ NEW: fragment가 스타일 파라미터를 받도록 변경 -->
+  <aside th:fragment="sidebar(mode)"
+         id="sidebar"
+         th:class="'sidebar ' + (${mode} ?: 'sidebar-light') + ' sidebar-fixed d-flex flex-column'">
+
+    <!-- Brand -->
+    <div class="sidebar-header p-3">
+      <a class="sidebar-brand d-none d-md-flex align-items-center py-2" th:href="@{/home}">
+        <img th:src="@{/assets/favicon/r.png}" alt="더드림건설" height="28" class="me-2">
+        <!-- ★ NEW: brand-text 클래스를 달아 CSS에서 narrow일 때 숨김 -->
+      </a>
+    </div>
+
+    <!-- 네비게이션 (스크롤 영역) -->
+    <ul class="sidebar-nav flex-grow-1" data-coreui="navigation">
+      <li class="nav-item">
+        <a class="nav-link" th:classappend="${active}=='home' ? ' active' : ''" th:href="@{/home}">
+          <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-home}"></use></svg>
+          Home
+        </a>
+      </li>
+
+      <li class="nav-title">업무</li>
+
+      <!-- 일정 -->
+      <li class="nav-group">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-calendar}"></use></svg>
+          일정
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item"><a class="nav-link" th:href="@{/schedule}"><span class="nav-icon"></span> 내 일정</a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-icon"></span> 팀 캘린더</a></li>
+        </ul>
+      </li>
+
+      <!-- 자료실 -->
+      <li class="nav-group">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-folder-open}"></use></svg>
+          자료실
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item"><a class="nav-link" th:href="@{/files}"><span class="nav-icon"></span> 문서 목록</a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-icon"></span> 업로드</a></li>
+        </ul>
+      </li>
+
+      <!-- 결재 -->
+      <li class="nav-group">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-clipboard}"></use></svg>
+          결재
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item"><a class="nav-link" th:href="@{/approval}"><span class="nav-icon"></span> 결재함</a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-icon"></span> 상신문서</a></li>
+        </ul>
+      </li>
+
+      <!-- 세무 -->
+      <li class="nav-group">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-bank}"></use></svg>
+          세무
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item"><a class="nav-link" th:href="@{/tax}"><span class="nav-icon"></span> 세무 현황</a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-icon"></span> 신고/납부</a></li>
+        </ul>
+      </li>
+
+      <!-- 관리자 전용 -->
+      <li class="nav-title" sec:authorize="hasRole('ADMIN')">관리</li>
+      <li class="nav-group" sec:authorize="hasRole('ADMIN')">
+        <a class="nav-link nav-group-toggle" href="#">
+          <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-settings}"></use></svg>
+          관리
+        </a>
+        <ul class="nav-group-items">
+          <li class="nav-item"><a class="nav-link" th:href="@{/admin}"><span class="nav-icon"></span> 시스템 설정</a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-icon"></span> 사용자 관리</a></li>
+        </ul>
+      </li>
+    </ul>
+
+    <!-- 하단 고정: 로그아웃 -->
+    <form th:action="@{/logout}" method="post" class="p-3">
+      <button type="submit" class="btn btn-outline-secondary w-100">Logout</button>
+    </form>
+  </aside>
+</body>
+</html>
