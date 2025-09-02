@@ -51,13 +51,13 @@
 
       <!-- 결재 -->
       <li class="nav-group">
-        <a class="nav-link nav-group-toggle" href="#">
+        <a class="nav-link nav-group-toggle" href="@{/approval/write}">
           <svg class="nav-icon"><use th:href="@{/vendors/@coreui/icons/svg/free.svg#cil-clipboard}"></use></svg>
           결재
         </a>
         <ul class="nav-group-items">
           <li class="nav-item"><a class="nav-link" th:href="@{/approval}"><span class="nav-icon"></span> 결재함</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><span class="nav-icon"></span> 상신문서</a></li>
+          <li class="nav-item"><a class="nav-link" th:href="@{/approval/write}"><span class="nav-icon"></span> 문서작성</a></li>
         </ul>
       </li>
 

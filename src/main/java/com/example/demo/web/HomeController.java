@@ -26,4 +26,5 @@ public class HomeController {
 	public String login() {
 		return "views/login";
 	}
+	
 }

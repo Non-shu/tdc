@@ -1,36 +1,35 @@
 package com.example.demo.web;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.demo.domain.ApprovalDocumentVO;
-import com.example.demo.domain.ApprovalStatus;
-import com.example.demo.repository.ApprovalDocumentMapper;
 
 import lombok.RequiredArgsConstructor;  
 
-@RestController
+@Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/approval")
+@RequestMapping("/approval")
 public class ApprovalController {
-	private final ApprovalDocumentMapper mapper;	
 	
+	@GetMapping("/list")
+	public String list(Model model) {
+		model.addAttribute("breadcrumb", "결재함");
+		return "views/approval/list";
+	}
 	
-	@PostMapping("/draft")
-	public Long draft(@RequestBody ApprovalDocumentVO vo) {
-	    vo.setStatus(ApprovalStatus.DRAFT);
-	    vo.setCreatedBy(vo.getCreatedBy() == null ? 1L : vo.getCreatedBy());
-	    mapper.insert(vo);
-	    return vo.getId();
+	@GetMapping("/write")
+	public String write(Model model) {
+		model.addAttribute("breadcrumb", "결재 작성");
+		return "views/approval/write";
 	}
 
-	
 	@GetMapping("/{id}")
-	public ApprovalDocumentVO get(@PathVariable Long id) {
-		return mapper.findById(id);
+	public String detail(@PathVariable Long id, Model model) {
+		model.addAttribute("docId", id);
+		return "views/approval/detail";
 	}
+	
+	
 }
