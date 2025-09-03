@@ -21,35 +21,37 @@
     <div class="row g-4">
       <!-- 좌측: 에디터 -->
       <div class="col-12 col-xl-9 col-editor">
-        <div class="mb-2">
-          <label for="docTitle" class="form-label">제목</label>
-          <input id="docTitle" type="text" class="form-control" placeholder="제목을 입력하세요">
-        </div>
-
-        <div class="card shadow-sm editor-card mb-3">
-          <div class="card-body">
-            <label class="form-label">본문</label>
-            <div id="editorHost"></div>
+        <!--하단 패딩 확보용 래퍼 추가 -->
+        <div class="content-inner">
+          <div class="mb-2">
+            <label for="docTitle" class="form-label">제목</label>
+            <input id="docTitle" type="text" class="form-control" placeholder="제목을 입력하세요">
           </div>
-        </div>
 
-        <div class="mb-3">
-          <label for="fileInput" class="form-label">첨부파일 (선택)</label>
-          <input id="fileInput" class="form-control" type="file" multiple>
-          <div class="form-text" id="fileNames">선택된 파일 없음</div>
-        </div>
+          <div class="card shadow-sm editor-card mb-3">
+            <div class="card-body">
+              <div id="editorHost"></div>
+            </div>
+          </div>
 
-        <div class="d-flex justify-content-end gap-2 actions-bar">
-          <button type="button" class="btn btn-outline-secondary" id="btnSaveTemp">임시저장</button>
-          <button type="reset"   class="btn btn-secondary"         id="btnReset">초기화</button>
-          <button type="button"  class="btn btn-primary"           id="btnSubmit">결재 상신</button>
-        </div>
+          <div class="mb-3">
+            <label for="fileInput" class="form-label">첨부파일 (선택)</label>
+            <input id="fileInput" class="form-control" type="file" multiple>
+            <div class="form-text" id="fileNames">선택된 파일 없음</div>
+          </div>
 
-        <input type="hidden" id="apprformId" value="">
-        <input type="hidden" id="approverIds" value="">
+          <div class="d-flex justify-content-end gap-2 actions-bar">
+            <button type="button" class="btn btn-outline-secondary" id="btnSaveTemp">임시저장</button>
+            <button type="reset"   class="btn btn-secondary"         id="btnReset">초기화</button>
+            <button type="button"  class="btn btn-primary"           id="btnSubmit">결재 상신</button>
+          </div>
+
+          <input type="hidden" id="apprformId" value="">
+          <input type="hidden" id="approverIds" value="">
+        </div>
       </div>
 
-      <!-- 우측: 문서 정보 (헤더 높이만큼 오프셋을 계산해서 자연스럽게 따라오도록) -->
+      <!-- 우측: 문서 정보 -->
       <aside class="col-12 col-xl-3 col-side">
         <div class="card sticky-aside">
           <div class="card-header">문서 정보</div>
@@ -121,27 +123,27 @@
               </div>
               <table class="table table-sm table-hover">
                 <tbody>
-                <tr>
-                  <td>홍길동</td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary btn-add-approver"
-                            data-approver-id="101" data-approver-name="홍길동">추가</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>김영희</td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary btn-add-approver"
-                            data-approver-id="205" data-approver-name="김영희">추가</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>이철수</td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary btn-add-approver"
-                            data-approver-id="309" data-approver-name="이철수">추가</button>
-                  </td>
-                </tr>
+                  <tr>
+                    <td>홍길동</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-primary btn-add-approver"
+                              data-approver-id="101" data-approver-name="홍길동">추가</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>김영희</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-primary btn-add-approver"
+                              data-approver-id="205" data-approver-name="김영희">추가</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>이철수</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-primary btn-add-approver"
+                              data-approver-id="309" data-approver-name="이철수">추가</button>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -161,5 +163,8 @@
 </section>
 
 <!-- 페이지 전용 스크립트 -->
-<script src="/js/approval-write.js" defer></script>
+<th:block layout:fragment="pageScripts">
+  <script th:src="@{/js/approval-write.js}" defer></script>
+</th:block>
+
 </html>

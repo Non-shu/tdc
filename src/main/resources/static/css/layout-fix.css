@@ -1,0 +1,53 @@
+@charset "UTF-8";
+/* === 전역 레이아웃 보정: 헤더/푸터 라인은 항상 전체폭 === */
+.header { position: sticky; top: 0; z-index: 1020; }
+.header .header-divider{
+  width: 100%;
+  border-bottom: 1px solid var(--cui-border-color, #e9ecef);
+}
+
+/* 푸터 라인도 전체폭 */
+.footer, .app-footer{
+  position: static !important;
+  border-top: 1px solid var(--cui-border-color, #e9ecef);
+}
+
+/* wrapper가 사이드바 상태에 따라 좌측 오프셋을 정확히 가지도록 */
+@media (min-width: 992px){
+  body.sidebar-fixed.sidebar-expand-lg.sidebar-narrow:not(.sidebar-overlaid) .wrapper{
+    padding-left: var(--cui-sidebar-narrow-width, 4rem) !important;
+  }
+  body.sidebar-fixed.sidebar-expand-lg:not(.sidebar-overlaid):not(.sidebar-narrow) .wrapper{
+    padding-left: var(--cui-sidebar-occupy-start, 15rem) !important;
+  }
+}
+body.sidebar-overlaid .wrapper{ padding-left: 0 !important; }
+
+/* 헤더/본문/푸터 내부 컨텐츠 폭만 컨테이너로 제어(라인은 전체폭 유지) */
+.header > .container-fluid,
+main.body > .container-fluid,
+.footer > .container-fluid{
+  max-width: none;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* 레이아웃 좌우 스크롤 안정화 */
+html{ scrollbar-gutter: stable both-edges; }
+.wrapper, .body{ min-width: 0 !important; }
+
+/* ===== (추가) 전역 스크롤/오버플로우 보정 ===== */
+html, body { height: auto; min-height: 100%; }
+body { overflow-y: auto !important; }
+
+.wrapper { height: auto !important; min-height: 100vh !important; overflow: visible !important; }
+main.body { min-height: auto !important; overflow-y: auto !important; overflow-x: visible !important; }
+
+.container-fluid, .container-xxl, .content, .main { overflow: visible !important; }
+
+/* 본문 하단이 버튼/푸터에 가려지지 않도록 */
+.approval-write-page .content-inner { padding-bottom: 2rem; }
+
+/* 에디터 안전값 */
+.toastui-editor-defaultUI { max-height: none; height: auto; }
+#editorHost, .toastui-editor { min-height: 520px; }
