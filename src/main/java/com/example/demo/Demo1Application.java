@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 		  "com.example.demo", 
 		  "com.example.config"
 		})
-@MapperScan("com.example.demo.repository")
+@MapperScan("com.example.demo.repository.mybatis")
 public class Demo1Application {
 
 	public static void main(String[] args) {

@@ -1,6 +1,8 @@
 @charset "UTF-8";
 
-/* ===== 사용자 테마 변수 ===== */
+/* ================================
+   전역 테마 / 레이아웃 기본값
+   ================================ */
 :root {
   --sidebar-bg: #f8fbff;
   --sidebar-link: #0d47a1;
@@ -10,118 +12,147 @@
   --cui-sidebar-width: 15rem;
   --cui-sidebar-occupy-start: 15rem;
 
-  /* ★ NEW: 사이드바 접힘 폭(아이콘 폭) */
+  /* 사이드바 접힘(아이콘 폭) */
   --cui-sidebar-narrow-width: 4rem;
 }
 
-/* 관리자 다크 테마가 필요할 때 body에 .theme-admin 추가 */
+/* (옵션) 관리자용 다크 테마 */
 .theme-admin{
   --sidebar-bg:#20232a;
   --sidebar-link:#cbd5e1;
   --sidebar-active-bg:#2b2f38;
 }
 
-/* ===== 사이드바(라이트) 가독성 ===== */
+/* ================================
+   사이드바(라이트) 커스텀
+   ================================ */
 .sidebar.sidebar-light {
   --cui-sidebar-bg: #f8fbff;
-  --cui-sidebar-color: #1e293b;                 /* 일반 텍스트 */
-  --cui-sidebar-nav-link-color: #0f172a;        /* 링크 텍스트 */
-  --cui-sidebar-nav-link-active-color: #0b1324; /* 활성 링크 */
-  --cui-sidebar-nav-link-active-bg: #e9efff;    /* 활성 배경 */
+  --cui-sidebar-color: #1e293b;
+  --cui-sidebar-nav-link-color: #0f172a;
+  --cui-sidebar-nav-link-active-color: #0b1324;
+  --cui-sidebar-nav-link-active-bg: #e9efff;
   --cui-sidebar-border-color: rgba(0,0,0,.08);
   border-right: 1px solid var(--cui-sidebar-border-color);
 }
 
-/* 브랜드 색(라이트) */
 .sidebar.sidebar-light .sidebar-brand,
 .sidebar.sidebar-light .sidebar-brand span {
   color: #0f172a !important;
 }
 
-/* 사이드바 배경/링크 */
 .sidebar { background: var(--sidebar-bg); }
 .sidebar .nav-link { color: var(--sidebar-link); }
 .sidebar .nav-link.active { background: var(--sidebar-active-bg); }
-
-/* 아주 약한 외곽선 느낌 - 라이트에서만 */
 .sidebar.sidebar-light .nav-link { text-shadow: 0 1px 0 rgba(255,255,255,.6); }
 .sidebar.sidebar-light .nav-icon { opacity: .9; }
 
 /* nav-group 들여쓰기 */
 .sidebar .nav-group-items .nav-link { padding-left: 2.25rem; }
 
-/* ===== 메인 레이아웃: 폭이 1px로 찌그러지는 현상 방지 + 전체폭 사용 ===== */
-.wrapper { min-width: 0 !important; width: 100% !important; }
-.body { min-width: 0 !important; }
+/* narrow 상태에서 브랜드 텍스트 감추기 */
+body.sidebar-narrow .sidebar-brand .brand-text { display: none; }
 
-/* 헤더/본문 컨테이너만 전체폭 사용 (전역 .container는 건드리지 않음) */
+/* 사이드바 스크롤/푸터 고정 */
+#sidebar { display: flex; flex-direction: column; }
+#sidebar .sidebar-nav { flex: 1 1 auto; overflow-y: auto; }
+#sidebar .sidebar-footer { position: sticky; bottom: 0; background: inherit; }
+
+/* ================================
+   전역 레이아웃 안정화
+   ================================ */
+.wrapper { min-width: 0 !important; width: 100% !important; }
+.body    { min-width: 0 !important; }
+
+/* 헤더/본문 컨테이너만 전체폭 사용 */
 .header > .container-fluid,
 main.body > .container-fluid {
   width: 100% !important;
   max-width: none !important;
 }
 
-/* 데스크톱에서 사이드바 너비만큼 본문 밀어내기 */
+/* 사이드바 모드별 wrapper 오프셋 */
 @media (min-width: 992px){
   body.sidebar-fixed.sidebar-expand-lg.sidebar-narrow:not(.sidebar-overlaid) .wrapper{
     padding-left: var(--cui-sidebar-narrow-width) !important;
   }
 }
+body.sidebar-overlaid .wrapper{
+  padding-left: 0 !important;
+}
+body.sidebar-narrow-unfoldable.sidebar-fixed.sidebar-expand-lg:not(.sidebar-overlaid) .wrapper{
+  padding-left: var(--cui-sidebar-narrow-width, 4rem) !important;
+}
 
-/* 미니 사이드바일 때 텍스트 숨김(아이콘만 남김) */
-body.sidebar-narrow .sidebar .nav-link .nav-link-text{ display:none; }
-body.sidebar-narrow .sidebar .nav-link .nav-icon{ margin-right:0; }
-
-  /* ★ NEW: 오버레이 모드는 오프셋 제거 */
-  body.sidebar-overlaid .wrapper{
-    padding-left: 0 !important;
-  }
-
-  /* (선택) hover로 펼치는 narrow-unfoldable을 쓸 때 */
-  body.sidebar-narrow-unfoldable.sidebar-fixed.sidebar-expand-lg:not(.sidebar-overlaid) .wrapper{
-    padding-left: var(--cui-sidebar-narrow-width, 4rem) !important;
-  }
-
-
-/* 사이드바 스크롤/푸터 고정 */
-#sidebar { display: flex; flex-direction: column; }
-#sidebar .sidebar-nav { flex: 1 1 auto; overflow-y: auto; }
-#sidebar .sidebar-footer { position: sticky; bottom: 0; background: inherit; }
-
-/* 브라우저/OS 스케일 영향 방지 및 스크롤 안정화 */
-html, body { width:100%; min-height:100%; }
+/* 브라우저 스크롤 안정화 */
+html, body { width:100%; min-height:100%; overflow-y:auto; }
 html { scrollbar-gutter: stable both-edges; }
 
-/* 라이트 테마 상호작용 가독성 */
-.sidebar.sidebar-light .nav-link:hover,
-.sidebar.sidebar-light .nav-link:focus{
-  background: var(--cui-sidebar-nav-link-active-bg);
-  color: var(--cui-sidebar-nav-link-active-color);
+/* 푸터가 내용 위를 덮지 않도록 */
+.footer, .app-footer { position: static !important; }
+main.body { padding-bottom: 2rem; }
+
+/* 카드/에디터 내부 요소 잘림 방지 */
+.card-body { overflow: visible; }
+
+/* Toast UI 기본 최소 높이(동적 조절 전 안전값) */
+.toastui-editor-main { min-height: 540px; }
+
+/* ================================
+   approval/write 페이지 전용 튜닝
+   ================================ */
+
+/* 컨테이너 더 넓게 */
+.approval-write-page.container-xxl { max-width: 1400px; }
+
+/* XL 이상에서 9:3 비율 */
+@media (min-width: 1200px) {
+  .approval-write-page .col-editor { flex: 0 0 auto; width: 75%; }
+  .approval-write-page .col-side   { flex: 0 0 auto; width: 25%; }
 }
-.sidebar.sidebar-light .nav-group.show > .nav-group-toggle{
-  background: var(--cui-sidebar-nav-link-active-bg);
-  color: var(--cui-sidebar-nav-link-active-color);
+
+/* 헤더 여백 살짝 타이트 */
+.header.header-sticky { margin-bottom: .5rem !important; }
+.header .container-fluid { padding-top: .35rem; padding-bottom: .35rem; }
+.header .breadcrumb      { margin: .25rem 0; }
+
+/* 페이지 상단 패딩 */
+.approval-write-page { padding-top: .75rem !important; }
+
+/* 하단 버튼바 항상 보이게(스크롤해도 따라옴) */
+.approval-write-page .actions-bar {
+  position: sticky;
+  bottom: 0;
+  padding: .5rem 0;
+  background: var(--cui-body-bg, #fff);
+  z-index: 5;
+  box-shadow: 0 -2px 12px rgba(0,0,0,.04);
 }
 
-/* ★ NEW: narrow 상태에서 브랜드 텍스트 감추기(아이콘만) */
-body.sidebar-narrow .sidebar-brand .brand-text { display: none; }
+/* 에디터 루트 보정(스크립트가 높이 재계산하기 전 기본값) */
+#editorHost { min-height: 420px; }
 
+/* ===== write 화면 보정 ===== */
 
-/* 사이드바 스크롤/푸터 고정 */
-#sidebar { display: flex; flex-direction: column; }
-#sidebar .sidebar-nav { flex: 1 1 auto; overflow-y: auto; }
-#sidebar .sidebar-footer { position: sticky; bottom: 0; background: inherit; }
-
-html, body { width:100%; min-height:100%; }  /* 브라우저/OS 스케일 영향 방지 */
-html { scrollbar-gutter: stable both-edges; } /* 스크롤 생겨도 레이아웃 안튐 */
-
-/* 라이트 테마 상호작용 가독성 */
-.sidebar.sidebar-light .nav-link:hover,
-.sidebar.sidebar-light .nav-link:focus{
-  background: var(--cui-sidebar-nav-link-active-bg);
-  color: var(--cui-sidebar-nav-link-active-color);
+/* 헤더 높이를 JS가 --header-h 로 넣어줌 */
+.sticky-aside {
+  position: sticky;
+  top: calc(var(--header-h, 56px) + 16px);
 }
-.sidebar.sidebar-light .nav-group.show > .nav-group-toggle{
-  background: var(--cui-sidebar-nav-link-active-bg);
-  color: var(--cui-sidebar-nav-link-active-color);
+
+/* 에디터 카드와 액션바 간격 (겹침 방지) */
+.editor-card { margin-bottom: .5rem; }
+
+/* 액션바는 스크롤해도 보이도록, 대신 그림자/배경으로 구분 */
+.approval-write-page .actions-bar{
+  position: sticky;
+  bottom: 0;
+  background: var(--cui-body-bg, #fff);
+  padding: .5rem 0;
+  z-index: 5;
+  box-shadow: 0 -2px 12px rgba(0,0,0,.04);
 }
+
+/* Toast UI 에디터 기본 높이(스크립트가 즉시 재계산) */
+.toastui-editor-main{ min-height: 420px; }
+

@@ -27,7 +27,7 @@ public class SecurityConfig {
                     "/login", "/error",
                     "/css/**", "/js/**", "/images/**",
                     "/vendors/**", "/assets/**", "/webjars/**",
-                    "/h2-console/**"
+                    "/h2-console/**", "/api/forms/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

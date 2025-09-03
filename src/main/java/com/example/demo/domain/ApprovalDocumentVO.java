@@ -10,10 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApprovalDocumentVO {
-	private Long id;
-	private String title;
-	private String content;
-	private ApprovalStatus status; //Enum
-	private Long createdBy;  
-	private LocalDateTime createdAt;
+	  private Long docId;     
+	  private Long formId;
+	  private String title;
+	  private String content;
+	  private ApprovalStatus status;
+	  private Long createdBy;
+	  private LocalDateTime createdAt;
 }

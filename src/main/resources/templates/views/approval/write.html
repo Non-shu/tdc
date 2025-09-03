@@ -4,70 +4,66 @@
       layout:decorate="~{layout/layout}">
 
 <section layout:fragment="content">
-  <div class="container-lg py-3">
-
-    <!-- 페이지 타이틀 + 우측 상단 컨트롤 -->
+  <div class="container-xxl py-3 approval-write-page">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3 class="mb-0">결재 작성</h3>
+      <h3 class="mb-0">문서 작성</h3>
       <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-        <!-- 버튼 먼저 -->
         <button type="button" class="btn btn-outline-primary btn-sm"
                 data-coreui-toggle="modal" data-coreui-target="#formSelectModal">양식 선택</button>
         <button type="button" class="btn btn-outline-primary btn-sm"
                 data-coreui-toggle="modal" data-coreui-target="#apprLineModal">결재선 지정</button>
-        <!-- 상태는 뒤에 -->
         <div class="small text-body-secondary ms-2">
           선택된 양식: <b id="selectedFormName">미선택</b> / 결재선: <b id="selectedApproverCount">미지정</b>
         </div>
       </div>
     </div>
 
-    <!-- 본문: 좌(작성) / 우(문서정보) -->
-    <div class="row">
-      <!-- 좌측 컬럼 -->
-      <div class="col-lg-8">
-
-        <!-- 제목 -->
+    <div class="row g-4">
+      <!-- 좌측: 에디터 -->
+      <div class="col-12 col-xl-9 col-editor">
         <div class="mb-2">
           <label for="docTitle" class="form-label">제목</label>
           <input id="docTitle" type="text" class="form-control" placeholder="제목을 입력하세요">
         </div>
 
-        <!-- 에디터 -->
-        <div class="card shadow-sm mb-3">
+        <div class="card shadow-sm editor-card mb-3">
           <div class="card-body">
             <label class="form-label">본문</label>
             <div id="editorHost"></div>
           </div>
         </div>
 
-        <!-- 첨부 -->
         <div class="mb-3">
           <label for="fileInput" class="form-label">첨부파일 (선택)</label>
           <input id="fileInput" class="form-control" type="file" multiple>
           <div class="form-text" id="fileNames">선택된 파일 없음</div>
         </div>
 
-        <!-- 액션 버튼 -->
-        <div class="d-flex justify-content-end gap-2">
+        <div class="d-flex justify-content-end gap-2 actions-bar">
           <button type="button" class="btn btn-outline-secondary" id="btnSaveTemp">임시저장</button>
-          <button type="reset" class="btn btn-secondary" id="btnReset">초기화</button>
-          <button type="button" class="btn btn-primary" id="btnSubmit">결재 상신</button>
+          <button type="reset"   class="btn btn-secondary"         id="btnReset">초기화</button>
+          <button type="button"  class="btn btn-primary"           id="btnSubmit">결재 상신</button>
         </div>
 
-        <!-- 히든 -->
         <input type="hidden" id="apprformId" value="">
         <input type="hidden" id="approverIds" value="">
       </div>
 
-      <!-- 우측 컬럼 -->
-      <aside class="col-lg-4">
-        <div class="card sticky-top" style="top: 1rem;">
+      <!-- 우측: 문서 정보 (헤더 높이만큼 오프셋을 계산해서 자연스럽게 따라오도록) -->
+      <aside class="col-12 col-xl-3 col-side">
+        <div class="card sticky-aside">
           <div class="card-header">문서 정보</div>
           <div class="card-body small">
-            <div class="d-flex justify-content-between"><span>기안자</span><span th:text="${#authentication?.name}">admin</span></div>
-            <div class="d-flex justify-content-between"><span>부서</span><span>-</span></div>
-            <div class="d-flex justify-content-between"><span>작성일</span><span th:text="${#dates.format(#dates.createNow(),'yyyy-MM-dd HH:mm')}">-</span></div>
+            <div class="d-flex justify-content-between">
+              <span>기안자</span><span th:text="${#authentication?.name}">admin</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>부서</span><span>-</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>작성일</span>
+              <span th:text="${#dates.format(#dates.createNow(),'yyyy-MM-dd HH:mm')}">-</span>
+            </div>
             <hr>
             <div class="text-body-secondary">제출 후 수신함(진행)에서 결재 상태를 확인할 수 있습니다.</div>
           </div>
@@ -76,7 +72,7 @@
     </div>
   </div>
 
-  <!-- ===== 모달: 양식 선택 ===== -->
+  <!-- 모달: 양식 선택 -->
   <div class="modal fade" id="formSelectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
@@ -86,29 +82,29 @@
         </div>
         <div class="modal-body">
           <table class="table table-hover align-middle">
-            <thead>
-              <tr><th style="width:80px;">선택</th><th>양식명</th><th>설명</th></tr>
-            </thead>
+            <thead><tr><th style="width:80px;">선택</th><th>양식명</th><th>설명</th></tr></thead>
             <tbody id="formListBody">
               <tr>
-                <td><button class="btn btn-sm btn-outline-primary" onclick="selectForm('F001','지출결의서')">선택</button></td>
+                <td><button class="btn btn-sm btn-outline-primary btn-select-form" data-code="F001" data-name="지출결의서">선택</button></td>
                 <td>지출결의서</td><td>경비/지출 품의</td>
               </tr>
               <tr>
-                <td><button class="btn btn-sm btn-outline-primary" onclick="selectForm('F002','휴가신청서')">선택</button></td>
-                <td>휴가신청서</td><td>연차/반차/병가</td>
+                <td><button class="btn btn-sm btn-outline-primary btn-select-form" data-code="F101" data-name="공사계약서(간이)">선택</button></td>
+                <td>공사계약서(간이)</td><td>간이형 계약서</td>
+              </tr>
+              <tr>
+                <td><button class="btn btn-sm btn-outline-primary btn-select-form" data-code="F102" data-name="공사계약서(상세)">선택</button></td>
+                <td>공사계약서(상세)</td><td>상세형 계약서</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-coreui-dismiss="modal">닫기</button>
-        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-coreui-dismiss="modal">닫기</button></div>
       </div>
     </div>
   </div>
 
-  <!-- ===== 모달: 결재선 지정 ===== -->
+  <!-- 모달: 결재선 지정 -->
   <div class="modal fade" id="apprLineModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
@@ -125,9 +121,27 @@
               </div>
               <table class="table table-sm table-hover">
                 <tbody>
-                <tr><td>홍길동</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="addApprover('101','홍길동')">추가</button></td></tr>
-                <tr><td>김영희</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="addApprover('205','김영희')">추가</button></td></tr>
-                <tr><td>이철수</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="addApprover('309','이철수')">추가</button></td></tr>
+                <tr>
+                  <td>홍길동</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-add-approver"
+                            data-approver-id="101" data-approver-name="홍길동">추가</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>김영희</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-add-approver"
+                            data-approver-id="205" data-approver-name="김영희">추가</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>이철수</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-add-approver"
+                            data-approver-id="309" data-approver-name="이철수">추가</button>
+                  </td>
+                </tr>
                 </tbody>
               </table>
             </div>
@@ -138,163 +152,14 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-outline-secondary" onclick="clearApprovers()">초기화</button>
+          <button class="btn btn-outline-secondary" id="btnClearApprovers">초기화</button>
           <button class="btn btn-primary" data-coreui-dismiss="modal">확인</button>
         </div>
       </div>
     </div>
   </div>
-
 </section>
 
-<!-- ===== 페이지 전용 스크립트 ===== -->
-<script th:inline="javascript">
-/* --- Toast UI 에디터가 로드되지 않았을 경우, CDN을 동적으로 삽입 --- */
-(function ensureToastUICDN(){
-  if(!document.querySelector('#toastui-editor-css')){
-    const l=document.createElement('link');
-    l.id='toastui-editor-css'; l.rel='stylesheet';
-    l.href='https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
-    document.head.appendChild(l);
-  }
-  function ready(fn){ document.readyState!=='loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
-  function loadAnd(fn){
-    if(window.toastui && window.toastui.Editor){ ready(fn); return; }
-    const s=document.createElement('script');
-    s.src='https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
-    s.onload=()=>ready(fn);
-    document.body.appendChild(s);
-  }
-  window._initToastEditor = (fn)=>loadAnd(fn);
-})();
-
-/* CSRF (선택) */
-function getCsrf(){
-  const t=document.querySelector('meta[name="_csrf"]')?.content;
-  const h=document.querySelector('meta[name="_csrf_header"]')?.content;
-  return t && h ? {header:h, token:t} : null;
-}
-
-let editor;
-
-/* 초기화 */
-_initToastEditor(function(){
-  editor = new toastui.Editor({
-    el: document.querySelector('#editorHost'),
-    height: '520px',
-    initialEditType: 'wysiwyg',
-    previewStyle: 'vertical',
-    autofocus: false,
-    usageStatistics: false
-  });
-
-  // 버튼들
-  document.getElementById('btnReset')?.addEventListener('click', ()=>{
-    document.getElementById('docTitle').value = '';
-    editor.setHTML('');
-    document.getElementById('fileInput').value='';
-    document.getElementById('fileNames').textContent='선택된 파일 없음';
-  });
-
-  document.getElementById('btnSaveTemp')?.addEventListener('click', handleSaveTemp);
-  document.getElementById('btnSubmit')?.addEventListener('click', handleSubmit);
-
-  // 전역 바인딩 (모달 버튼에서 onclick 호출)
-  window.selectForm     = selectForm;
-  window.addApprover    = addApprover;
-  window.clearApprovers = clearApprovers;
-
-  // 파일 선택 표시
-  document.getElementById('fileInput')?.addEventListener('change', (e)=>{
-    const names=[...e.target.files].map(f=>f.name).join(', ');
-    document.getElementById('fileNames').textContent = names || '선택된 파일 없음';
-  });
-});
-
-/* ===== 모달 로직 ===== */
-function selectForm(id, name){
-  document.getElementById('apprformId').value=id;
-  document.getElementById('selectedFormName').textContent=name;
-  document.querySelector('#formSelectModal [data-coreui-dismiss="modal"]')?.click();
-}
-function addApprover(id, name){
-  const li=document.createElement('li');
-  li.className='list-group-item d-flex justify-content-between align-items-center';
-  li.dataset.id=id;
-  li.innerHTML=`<span>${name}</span>
-    <button type="button" class="btn btn-sm btn-outline-danger">제거</button>`;
-  li.querySelector('button').addEventListener('click', ()=>{ li.remove(); syncApproverIds(); });
-  document.getElementById('approverList').appendChild(li);
-  syncApproverIds();
-}
-function clearApprovers(){
-  document.getElementById('approverList').innerHTML='';
-  syncApproverIds();
-}
-function syncApproverIds(){
-  const ids=[...document.querySelectorAll('#approverList li')].map(li=>li.dataset.id);
-  document.getElementById('approverIds').value=ids.join(',');
-  document.getElementById('selectedApproverCount').textContent = ids.length ? `${ids.length}명` : '미지정';
-}
-
-/* ===== 공통 수집/검증 ===== */
-function collectAndValidate(){
-  const title=document.getElementById('docTitle').value.trim();
-  const formId=document.getElementById('apprformId').value.trim();
-  const approvers=document.getElementById('approverIds').value.trim();
-  if(!title){ alert('제목을 입력하세요.'); return null; }
-  if(!formId){ alert('결재 양식을 선택하세요.'); return null; }
-  if(!approvers){ alert('최소 1명의 결재자를 지정하세요.'); return null; }
-
-  const content = editor ? editor.getHTML() : '';
-  const createdBy = /*[[${#authentication?.name}]]*/ null ? null : 1;
-  return { title, content, createdBy, formId, approverIds: approvers };
-}
-
-/* ===== API 헬퍼 ===== */
-async function callJson(url, payload){
-  const csrf=getCsrf();
-  const headers={'Content-Type':'application/json'};
-  if(csrf) headers[csrf.header]=csrf.token;
-  const res=await fetch(url,{method:'POST',headers,body:JSON.stringify(payload)});
-  if(!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-/* 임시저장 */
-async function handleSaveTemp(){
-  const payload=collectAndValidate(); if(!payload) return;
-  try{
-    const id=await callJson('/api/approval/draft', payload);
-    alert('임시저장 되었습니다.');
-    // location.href=`/approval/${id}`;
-  }catch(e){ console.error(e); alert('임시저장 실패: '+e.message); }
-}
-/* 결재 상신 */
-async function handleSubmit(){
-  const payload=collectAndValidate(); if(!payload) return;
-  try{
-    const id=await callJson('/api/approval/submit', payload);
-    alert('상신되었습니다.');
-    // location.href=`/approval/${id}`;
-  }catch(e){ console.error(e); alert('상신 실패: '+e.message); }
-}
-</script>
-
-<!-- 페이지 전용 스타일 -->
-<style>
-/* Editor 시각 경계 + 높이 + 하단 여백 */
-.toastui-editor-defaultUI{ border:1px solid #e9ecef; border-radius:.5rem; }
-.toastui-editor-main{ min-height:420px; }
-.toastui-editor-contents{ padding-bottom:48px; }
-
-/* 에디터 카드가 내용 자르는 것 방지 */
-.card-body{ overflow:visible; }
-
-/* 작은 화면에서 우측 카드 간격 */
-@media (max-width: 991.98px){
-  aside .card.sticky-top{ position:static !important; }
-}
-</style>
-
+<!-- 페이지 전용 스크립트 -->
+<script src="/js/approval-write.js" defer></script>
 </html>

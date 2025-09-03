@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.ApprovalDocumentVO;
 import com.example.demo.domain.ApprovalStatus;
-import com.example.demo.repository.ApprovalDocumentMapper;
+import com.example.demo.repository.mybatis.ApprovalDocumentMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,14 +23,14 @@ public class ApprovalApiController {
     public Long draft(@RequestBody ApprovalDocumentVO vo) {
         vo.setStatus(ApprovalStatus.DRAFT); // 임시
         mapper.insert(vo);
-        return vo.getId();
+        return vo.getDocId();
     }
 	
 	@PostMapping("/submit")
     public Long submit(@RequestBody ApprovalDocumentVO vo) {
         vo.setStatus(ApprovalStatus.SUBMITTED); // 상신
         mapper.insert(vo);
-        return vo.getId();
+        return vo.getDocId();
     }
 	
 	@GetMapping("/{id}")

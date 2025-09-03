@@ -1,13 +1,15 @@
 <th:block th:fragment="commonJs">
-  <!-- CoreUI bundle -->
-  <script th:src="@{/vendors/@coreui/coreui/js/coreui.bundle.min.js}"></script>
-  <!-- simplebar -->
-  <script th:src="@{/vendors/simplebar/js/simplebar.min.js}"></script>
+  <!-- jQuery: 가장 먼저, defer 제거(실행 보장) -->
+  <script th:src="@{https://code.jquery.com/jquery-3.7.1.min.js}"></script>
 
-  <!-- Toast UI Editor (CDN) -->
+  <!-- CoreUI & deps -->
+  <script th:src="@{/vendors/@coreui/coreui/js/coreui.bundle.min.js}" defer></script>
+  <script th:src="@{/vendors/simplebar/js/simplebar.min.js}" defer></script>
+
+  <!-- Toast UI Editor -->
   <script th:src="@{https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js}" defer></script>
-  <script th:src="@{https://uicdn.toast.com/editor/latest/i18n/ko-kr.js}"></script>
+  <script th:src="@{https://uicdn.toast.com/editor/latest/i18n/ko-kr.js}" defer></script>
 
- <script th:src="@{/js/app.js}" defer></script>
- 
+  <!-- App 공통 -->
+  <script th:src="@{/js/app.js}" defer></script>
 </th:block>

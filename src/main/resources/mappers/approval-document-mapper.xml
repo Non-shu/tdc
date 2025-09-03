@@ -2,27 +2,26 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.demo.repository.ApprovalDocumentMapper">
+<mapper namespace="com.example.demo.repository.mybatis.ApprovalDocumentMapper">
 
-  <!-- type 은 ApprovalDocumentVO (별칭 패키지 설정을 썼으니 클래스명만) -->
   <resultMap id="DocMap" type="ApprovalDocumentVO">
-    <id     property="id"        column="id"/>
+    <id     property="docId"    column="doc_id"/>
+    <result property="formId"    column="form_id"/>
     <result property="title"     column="title"/>
     <result property="content"   column="content"/>
-    <!-- enum 문자열 저장(전역 핸들러 설정을 이미 해놨으니 그대로 OK) -->
     <result property="status"    column="status"
             javaType="com.example.demo.domain.ApprovalStatus"/>
     <result property="createdBy" column="created_by"/>
     <result property="createdAt" column="created_at"/>
   </resultMap>
 
-  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO approval_document (title, content, status, created_by)
-    VALUES (#{title}, #{content}, #{status}, #{createdBy})
+  <insert id="insert" useGeneratedKeys="true" keyProperty="docId">
+    INSERT INTO approval_document (form_id, title, content, status, created_by)
+    VALUES (#{formId}, #{title}, #{content}, #{status}, #{createdBy})
   </insert>
 
   <select id="findById" resultMap="DocMap">
-    SELECT * FROM approval_document WHERE id = #{id}
+    SELECT * FROM approval_document WHERE doc_id = #{id}
   </select>
 
   <select id="findMyDrafts" resultMap="DocMap">
@@ -30,7 +29,7 @@
       FROM approval_document
      WHERE created_by = #{userId}
        AND status = 'DRAFT'
-     ORDER BY id DESC
+     ORDER BY doc_id DESC
   </select>
 
   <select id="findByStatus" resultMap="DocMap">
@@ -38,8 +37,7 @@
       FROM approval_document
      WHERE created_by = #{userId}
        AND status = #{status}
-     ORDER BY id DESC
+     ORDER BY doc_id DESC
   </select>
-  
-  
+
 </mapper>
