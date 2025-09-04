@@ -4,25 +4,26 @@
 
 <mapper namespace="com.example.demo.repository.mybatis.ApprovalFormMapper">
 
-  <resultMap id="FormMap" type="ApprovalFormVO">
-    <id     property="formId"          column="form_id"/>
-    <result property="code"            column="code"/>
-    <result property="name"            column="name"/>
+  <resultMap id="FormMap" type="com.example.demo.domain.ApprovalFormVO">
+    <result property="formCode"        column="form_code"/>
+    <result property="formName"        column="form_name"/>
     <result property="description"     column="description"/>
     <result property="contentTemplate" column="content_template"/>
     <result property="active"          column="active"/>
     <result property="createdAt"       column="created_at"/>
   </resultMap>
 
-  <select id="findByCodeAndActiveTrue" resultMap="FormMap">
-    SELECT * FROM approval_form
-     WHERE code = #{code} AND active = TRUE
+  <select id="findByFormCodeAndActiveTrue" resultMap="FormMap">
+    SELECT form_code, form_name, description, content_template, active, created_at
+    FROM approval_form
+    WHERE form_code = #{formCode}
+      AND active = TRUE
   </select>
 
   <select id="findAllActiveOrderByName" resultMap="FormMap">
-    SELECT * FROM approval_form
-     WHERE active = TRUE
-     ORDER BY name ASC
+    SELECT form_code, form_name, description, content_template, active, created_at
+    FROM approval_form
+    WHERE active = TRUE
+    ORDER BY form_name ASC
   </select>
-
 </mapper>

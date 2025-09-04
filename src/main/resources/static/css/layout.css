@@ -1,0 +1,67 @@
+@charset "UTF-8";
+
+/* ===== 기본: PC 최소 폭 고정 ===== */
+:root { --app-min-width: 1366px; }
+html, body { min-width: var(--app-min-width); }
+
+/* 스크롤 흔들림/가로 여백 전면 차단 */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;   /* 가로 스크롤 금지 */
+}
+html { overflow-y: auto; }
+body { overflow-y: auto; }
+
+/* CoreUI가 vw 기반 폭을 주더라도 강제로 100%만 쓰게 */
+body > .wrapper,
+.header,
+.footer,
+main.body {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+
+/* wrapper/메인 기본값 */
+.wrapper { min-height: 100vh !important; height: auto !important; overflow: visible !important; }
+main.body { min-height: auto !important; overflow-y: auto !important; overflow-x: visible !important; }
+
+/* 사이드바 상태에 따른 좌측 오프셋(우측은 건드리지 않음) */
+@media (min-width: 992px){
+  body.sidebar-fixed.sidebar-expand-lg.sidebar-narrow:not(.sidebar-overlaid) .wrapper{
+    padding-left: var(--cui-sidebar-narrow-width, 4rem) !important;
+  }
+  body.sidebar-fixed.sidebar-expand-lg:not(.sidebar-overlaid):not(.sidebar-narrow) .wrapper{
+    padding-left: var(--cui-sidebar-occupy-start, 15rem) !important;
+  }
+}
+body.sidebar-overlaid .wrapper { padding-left: 0 !important; }
+
+/* 헤더/푸터 라인은 화면 끝까지, 내부 컨텐츠 패딩만 컨테이너에서 */
+.header { position: sticky; top: 0; z-index: 1020; }
+.header .header-divider { width: 100%; border-bottom: 1px solid var(--cui-border-color, #e9ecef); }
+.footer, .app-footer { position: static !important; border-top: 1px solid var(--cui-border-color, #e9ecef); }
+
+/* 컨테이너는 넘침 숨김 금지 + 폭 제한 해제 */
+.container-fluid, .container-xxl, .content, .main {
+  overflow: visible !important;
+  max-width: none !important;
+}
+
+/* 본문 컨테이너 기본 패딩(필요하면 페이지에서 조절) */
+main.body > .container-fluid { padding-left: 1rem; padding-right: 1rem; }
+
+/* ===== 대시보드: 카드가 화면 끝까지 닿도록 ===== */
+.dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+@media (max-width: 1440px){ .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
+/* 컨테이너 1rem 패딩을 그리드에서 상쇄 */
+main.body > .container-fluid .dashboard-grid { margin-left: -1rem; margin-right: -1rem; }
+
+/* 전역(토스트UI) 안전값 */
+.toastui-editor-defaultUI { max-height: none; height: auto; }
+#editorHost, .toastui-editor { min-height: 560px; }
+
+/* 혹시 가짜 스크롤(플러그인) 여백이 생길 때 대비 */
+.simplebar-content-wrapper{ padding-right: 0 !important; }

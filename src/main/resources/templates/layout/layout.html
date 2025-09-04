@@ -9,13 +9,13 @@
 <body class="sidebar-fixed sidebar-expand-lg">
 
   <!-- 사이드바 -->
-  <!-- ★ NEW: SSR FOUC 방지를 위해 기본 클래스도 넣어둠(라이트 기본) -->
+  <!-- SSR FOUC 방지를 위해 기본 클래스도 넣어둠(라이트 기본) -->
   <aside id="sidebar" class="sidebar sidebar-light sidebar-fixed"
          th:replace="~{fragments/sidebar :: sidebar('sidebar-light')}">
   </aside>
 
   <!-- 본문 -->
-  <div class="wrapper d-flex flex-column">
+  <div class="wrapper d-flex flex-column min-vh-100">
 
     <!-- 헤더 -->
     <header class="header header-sticky mb-4">
@@ -44,7 +44,7 @@
     </header>
 
     <!-- 메인 -->
-    <main class="body flex-grow-1 px-3">
+    <main class="body flex-grow-1">
       <div class="container-fluid">
         <section layout:fragment="content"></section>
       </div>

@@ -1,14 +1,14 @@
 package com.example.demo.domain;
 
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public class ApprovalFormVO {
-  private Long formId;
-  private String code;
-  private String name;
+  private String formCode;        // PK
+  private String formName;
   private String description;
   private String contentTemplate;
   private Boolean active;
-  private java.time.LocalDateTime createdAt;
+  private LocalDateTime createdAt;
 }

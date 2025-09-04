@@ -17,4 +17,6 @@ public interface ApprovalDocumentMapper {
 	
 	List<ApprovalDocumentVO> findByStatus(@Param("userId") Long userId,
 											@Param("status") ApprovalStatus status);
+	
+	int updateTemp(ApprovalDocumentVO doc);
 }

@@ -1,0 +1,51 @@
+@charset "UTF-8";
+
+/* 작성 페이지 상단 살짝 여백 */
+.approval-write-page { padding-top: .75rem !important; }
+
+/* 헤더 간격 타이트 */
+.header.header-sticky { margin-bottom: .5rem !important; }
+.header .container-fluid { padding-block: .35rem; }
+.header .breadcrumb { margin: .25rem 0; }
+
+/* 버튼바 고정 + 본문 안전 여백(가리는 일 방지) */
+.approval-write-page .actions-bar{
+  position: sticky; bottom: 0; padding: .5rem 0;
+  background: var(--cui-body-bg, #fff);
+  z-index: 110; box-shadow: 0 -2px 12px rgba(0,0,0,.04);
+}
+.approval-write-page .content-inner { padding-bottom: 4.5rem; }
+
+/* 우측 정보 카드 고정 */
+.approval-write-page .sticky-aside{ position: sticky; top: 72px; }
+
+/* 에디터 카드/내부 넘침 허용(자르지 않기) */
+.approval-write-page .editor-card{ overflow: visible; margin-bottom: .5rem; }
+.approval-write-page .editor-card .card-body{ padding-bottom: .5rem; overflow: visible; }
+
+/* 에디터 외곽 테두리 + 안전 높이 */
+.approval-write-page .toastui-editor-defaultUI { border:1px solid #e9ecef; border-radius:.5rem; }
+#editorHost{ min-height: 480px; }
+
+/* 1열 WYSIWYG */
+#editorHost .toastui-editor-defaultUI .toastui-editor-md-splitter{ display:none !important; }
+#editorHost .toastui-editor-defaultUI .toastui-editor-md-container{ display:none !important; }
+#editorHost .toastui-editor-defaultUI .toastui-editor-ww-container{ width:100% !important; }
+
+/* 에디터 내부 패딩(하단 버튼바와 겹치지 않게) */
+#editorHost .toastui-editor-contents{ padding: 12px 12px 40px !important; box-sizing: border-box; }
+
+/* 붙여넣은 템플릿 폭 유동 */
+.approval-write-page .toastui-editor-contents,
+.approval-write-page .toastui-editor-contents *{ max-width: 100% !important; }
+.approval-write-page .toastui-editor-contents table{ width: 100% !important; table-layout: fixed; }
+.approval-write-page .toastui-editor-contents img,
+.approval-write-page .toastui-editor-contents video,
+.approval-write-page .toastui-editor-contents iframe{ max-width: 100% !important; height: auto !important; }
+.approval-write-page .toastui-editor-contents [style*="width"]{ width: 100% !important; max-width: 100% !important; }
+.approval-write-page .toastui-editor-contents > p{ margin: 0 2px; }
+
+/* 그리드가 에디터를 자르지 않도록 */
+.approval-write-page .row,
+.approval-write-page .col-editor,
+.approval-write-page .col-side { overflow: visible !important; }

@@ -6,11 +6,11 @@
 
 <section layout:fragment="content">
 
-  <!-- row-cols로 반응형 열 수를 명시: md부터 2열, lg부터 3열 -->
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+  <!-- 화면폭에 맞춰 열 수가 자동으로 늘어나는 그리드 -->
+  <div class="dashboard-grid">
 
     <!-- 내 알림 -->
-    <div class="col">
+    <div>
       <div class="card h-100">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
@@ -26,7 +26,7 @@
     </div>
 
     <!-- 최근 공지 -->
-    <div class="col">
+    <div>
       <div class="card h-100">
         <div class="card-body">
           <h6 class="mb-2">최근 공지</h6>
@@ -39,12 +39,21 @@
     </div>
 
     <!-- 내 업무 -->
-    <div class="col">
+    <div>
       <div class="card h-100">
         <div class="card-body">
           <h6 class="mb-2">내 업무</h6>
-        <p class="small text-body-secondary mb-3">담당 이슈/요청 리스트 요약</p>
-        <a th:href="@{/tasks}" class="btn btn-sm btn-outline-primary">바로가기</a>
+          <p class="small text-body-secondary mb-3">담당 이슈/요청 리스트 요약</p>
+          <a th:href="@{/tasks}" class="btn btn-sm btn-outline-primary">바로가기</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- (빈 칸 채움 위젯) -->
+    <div>
+      <div class="card h-100">
+        <div class="card-body d-flex align-items-center justify-content-center text-body-secondary">
+          위젯 추가 예정
         </div>
       </div>
     </div>

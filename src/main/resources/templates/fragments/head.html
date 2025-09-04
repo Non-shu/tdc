@@ -8,8 +8,10 @@
 <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
 
-<link rel="stylesheet" th:href="@{/css/app.css}">
-<link rel="stylesheet" th:href="@{/css/layout-fix.css}">
+<link rel="stylesheet" th:href="@{/css/layout.css}">
+<th:block layout:fragment="pageStyles">
+  <link rel="stylesheet" th:href="@{/css/approval-write.css}">
+</th:block>
 
 <link rel="icon" th:href="@{/assets/favicon/favi.ico}">
 </head>

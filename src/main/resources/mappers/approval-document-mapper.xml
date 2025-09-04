@@ -1,43 +1,64 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
- "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.demo.repository.mybatis.ApprovalDocumentMapper">
+<mapper
+	namespace="com.example.demo.repository.mybatis.ApprovalDocumentMapper">
 
-  <resultMap id="DocMap" type="ApprovalDocumentVO">
-    <id     property="docId"    column="doc_id"/>
-    <result property="formId"    column="form_id"/>
-    <result property="title"     column="title"/>
-    <result property="content"   column="content"/>
-    <result property="status"    column="status"
-            javaType="com.example.demo.domain.ApprovalStatus"/>
-    <result property="createdBy" column="created_by"/>
-    <result property="createdAt" column="created_at"/>
-  </resultMap>
+	<resultMap id="DocMap"
+		type="com.example.demo.domain.ApprovalDocumentVO">
+		<id property="docId" column="doc_id" />
+		<result property="formCode" column="form_code" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<!-- enum ↔ VARCHAR 매핑 (안정적으로 typeHandler 명시) -->
+		<result property="status" column="status"
+			javaType="com.example.demo.domain.ApprovalStatus"
+			typeHandler="org.apache.ibatis.type.EnumTypeHandler" />
+		<result property="createdBy" column="created_by" />
+		<result property="createdAt" column="created_at" />
+	</resultMap>
 
-  <insert id="insert" useGeneratedKeys="true" keyProperty="docId">
-    INSERT INTO approval_document (form_id, title, content, status, created_by)
-    VALUES (#{formId}, #{title}, #{content}, #{status}, #{createdBy})
-  </insert>
+	<insert id="insert"
+		parameterType="com.example.demo.domain.ApprovalDocumentVO"
+		useGeneratedKeys="true" keyProperty="docId">
+		INSERT INTO approval_document (form_code, title, content, status,
+		created_by)
+		VALUES (#{formCode}, #{title}, #{content}, #{status}, #{createdBy})
+	</insert>
 
-  <select id="findById" resultMap="DocMap">
-    SELECT * FROM approval_document WHERE doc_id = #{id}
-  </select>
+	<select id="findById"
+		resultType="com.example.demo.domain.ApprovalDocumentVO">
+		SELECT doc_id, form_code, title, content, status, created_by, created_at
+		FROM approval_document
+		WHERE doc_id = #{docId}
+	</select>
 
-  <select id="findMyDrafts" resultMap="DocMap">
-    SELECT *
-      FROM approval_document
-     WHERE created_by = #{userId}
-       AND status = 'DRAFT'
-     ORDER BY doc_id DESC
-  </select>
+	<!-- 임시(=TEMP) 문서만 조회 -->
+	<select id="findMyDrafts" resultMap="DocMap">
+		SELECT * FROM approval_document
+		WHERE created_by = #{userId}
+		AND status = 'TEMP'
+		ORDER BY doc_id DESC
+	</select>
 
-  <select id="findByStatus" resultMap="DocMap">
-    SELECT *
-      FROM approval_document
-     WHERE created_by = #{userId}
-       AND status = #{status}
-     ORDER BY doc_id DESC
-  </select>
+	<select id="findByStatus" resultMap="DocMap">
+		SELECT * FROM approval_document
+		WHERE created_by = #{userId}
+		AND status = #{status,javaType=com.example.demo.domain.ApprovalStatus,
+		typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+		ORDER BY doc_id DESC
+	</select>
+
+	<!-- 임시저장 수정 -->
+	<update id="updateTemp"
+		parameterType="com.example.demo.domain.ApprovalDocumentVO">
+		UPDATE approval_document
+		SET form_code = #{formCode},
+		title = #{title},
+		content = #{content}
+		WHERE doc_id = #{docId}
+		AND status = 'TEMP'
+	</update>
 
 </mapper>
