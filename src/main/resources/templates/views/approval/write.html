@@ -1,162 +1,181 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <section layout:fragment="content">
-  <div class="container-fluid py-3 approval-write-page">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3 class="mb-0">문서 작성</h3>
-      <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-        <button type="button" class="btn btn-outline-primary btn-sm"
-                data-coreui-toggle="modal" data-coreui-target="#formSelectModal">양식 선택</button>
-        <button type="button" class="btn btn-outline-primary btn-sm"
-                data-coreui-toggle="modal" data-coreui-target="#apprLineModal">결재선 지정</button>
-        <div class="small text-body-secondary ms-2">
-          선택된 양식: <b id="selectedFormName">미선택</b> / 결재선: <b id="selectedApproverCount">미지정</b>
-        </div>
-      </div>
-    </div>
+	<div class="container-fluid py-3 approval-write-page">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h3 class="mb-0">문서 작성</h3>
+			<div
+				class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+				<button type="button" class="btn btn-outline-primary btn-sm"
+					data-coreui-toggle="modal" data-coreui-target="#formSelectModal">양식
+					선택</button>
+				<button type="button" class="btn btn-outline-primary btn-sm"
+					data-coreui-toggle="modal" data-coreui-target="#apprLineModal">결재선
+					지정</button>
+				<div class="small text-body-secondary ms-2">
+					선택된 양식: <b id="selectedFormName">미선택</b> / 결재선: <b
+						id="selectedApproverCount">미지정</b>
+				</div>
+			</div>
+		</div>
 
-    <div class="row g-4">
-      <div class="col-12 col-xl-9 col-editor">
-        <div class="content-inner">
-          <div class="mb-2">
-            <label for="docTitle" class="form-label">제목</label>
-            <input id="docTitle" type="text" class="form-control" placeholder="제목을 입력하세요">
-          </div>
+		<div class="row g-4">
+			<div class="col-12 col-xl-9 col-editor">
+				<div class="content-inner">
+					<div class="mb-2">
+						<label for="docTitle" class="form-label">제목</label> <input
+							id="docTitle" name="title" type="text" class="form-control"
+							placeholder="제목을 입력하세요">
+					</div>
 
-          <div class="card shadow-sm editor-card mb-3">
-            <div class="card-body"><div id="editorHost"></div></div>
-          </div>
+					<div class="card shadow-sm editor-card mb-3">
+						<div class="card-body">
+							<div id="editorHost"></div>
+						</div>
+					</div>
+										
+					<div class="mb-3">
+						<label for="fileInput" class="form-label">첨부파일 (선택)</label> <input
+							id="fileInput" name="files" class="form-control" type="file" multiple>
+						<div class="form-text" id="fileNames">선택된 파일 없음</div>
+					</div>
 
-          <div class="mb-3">
-            <label for="fileInput" class="form-label">첨부파일 (선택)</label>
-            <input id="fileInput" class="form-control" type="file" multiple>
-            <div class="form-text" id="fileNames">선택된 파일 없음</div>
-          </div>
+					<div class="d-flex justify-content-end gap-2 actions-bar">
+						<button type="button" class="btn btn-outline-secondary"
+							id="btnSaveTemp">임시저장</button>
+						<button type="button" class="btn btn-secondary" id="btnReset">초기화</button>
+						<button type="button" class="btn btn-primary" id="btnSubmit">결재
+							상신</button>
+					</div>
 
-          <div class="d-flex justify-content-end gap-2 actions-bar">
-            <button type="button" class="btn btn-outline-secondary" id="btnSaveTemp">임시저장</button>
-            <button type="reset"   class="btn btn-secondary"         id="btnReset">초기화</button>
-            <button type="button"  class="btn btn-primary"           id="btnSubmit">결재 상신</button>
-          </div>
+					<!-- hidden: 호환을 위해 둘 다 둠 -->
+					<input type="hidden" id="formId" name="formCode" value=""> <input
+						type="hidden" id="apprformId" name="apprformCode" value=""> <input
+						type="hidden" id="approverIds" name="approverIds" value="">
+				</div>
+			</div>
 
-          <!-- hidden: 호환을 위해 둘 다 둠 -->
-          <input type="hidden" id="formId" value="">
-          <input type="hidden" id="apprformId" value="">
-          <input type="hidden" id="approverIds" value="">
-        </div>
-      </div>
+			<aside class="col-12 col-xl-3 col-side">
+				<div class="card sticky-aside">
+					<div class="card-header">문서 정보</div>
+					<div class="card-body small">
+						<div class="d-flex justify-content-between">
+							<span>기안자</span><span th:text="${#authentication?.name}">admin</span>
+						</div>
+						<div class="d-flex justify-content-between">
+							<span>부서</span><span>-</span>
+						</div>
+						<div class="d-flex justify-content-between">
+							<span>작성일</span><span
+								th:text="${#dates.format(#dates.createNow(),'yyyy-MM-dd HH:mm')}">-</span>
+						</div>
+						<hr>
+						<div class="text-body-secondary">제출 후 수신함(진행)에서 결재 상태를 확인할 수
+							있습니다.</div>
+					</div>
+				</div>
+			</aside>
+		</div>
+	</div>
 
-      <aside class="col-12 col-xl-3 col-side">
-        <div class="card sticky-aside">
-          <div class="card-header">문서 정보</div>
-          <div class="card-body small">
-            <div class="d-flex justify-content-between"><span>기안자</span><span th:text="${#authentication?.name}">admin</span></div>
-            <div class="d-flex justify-content-between"><span>부서</span><span>-</span></div>
-            <div class="d-flex justify-content-between">
-              <span>작성일</span><span th:text="${#dates.format(#dates.createNow(),'yyyy-MM-dd HH:mm')}">-</span>
-            </div>
-            <hr>
-            <div class="text-body-secondary">제출 후 수신함(진행)에서 결재 상태를 확인할 수 있습니다.</div>
-          </div>
-        </div>
-      </aside>
-    </div>
-  </div>
+	<!-- 모달: 양식 선택 -->
+	<div class="modal fade" id="formSelectModal" tabindex="-1"
+		aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">양식 선택</h5>
+					<button type="button" class="btn-close" data-coreui-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-hover align-middle">
+						<thead>
+							<tr>
+								<th style="width: 80px;">선택</th>
+								<th>양식명</th>
+								<th>설명</th>
+							</tr>
+						</thead>
+						<tbody id="formListBody">
+							<!-- data-id: 실제 form_id (예시), data-code: 폴백용 코드 -->
+							<tr>
+								<td><button
+										class="btn btn-sm btn-outline-primary btn-select-form"
+										data-id="1" data-code="F001" data-name="지출결의서">선택</button></td>
+								<td>지출결의서</td>
+								<td>경비/지출 품의</td>
+							</tr>
+							<tr>
+								<td><button
+										class="btn btn-sm btn-outline-primary btn-select-form"
+										data-id="101" data-code="F101" data-name="공사계약서(간이)">선택</button></td>
+								<td>공사계약서(간이)</td>
+								<td>간이형 계약서</td>
+							</tr>
+							<tr>
+								<td><button
+										class="btn btn-sm btn-outline-primary btn-select-form"
+										data-id="102" data-code="F102" data-name="공사계약서(상세)">선택</button></td>
+								<td>공사계약서(상세)</td>
+								<td>상세형 계약서</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" data-coreui-dismiss="modal">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
-  <!-- 모달: 양식 선택 -->
-  <div class="modal fade" id="formSelectModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">양식 선택</h5>
-          <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <table class="table table-hover align-middle">
-            <thead><tr><th style="width:80px;">선택</th><th>양식명</th><th>설명</th></tr></thead>
-            <tbody id="formListBody">
-              <!-- data-id: 실제 form_id (예시), data-code: 폴백용 코드 -->
-              <tr>
-                <td><button class="btn btn-sm btn-outline-primary btn-select-form" data-id="1"   data-code="F001" data-name="지출결의서">선택</button></td>
-                <td>지출결의서</td><td>경비/지출 품의</td>
-              </tr>
-              <tr>
-                <td><button class="btn btn-sm btn-outline-primary btn-select-form" data-id="101" data-code="F101" data-name="공사계약서(간이)">선택</button></td>
-                <td>공사계약서(간이)</td><td>간이형 계약서</td>
-              </tr>
-              <tr>
-                <td><button class="btn btn-sm btn-outline-primary btn-select-form" data-id="102" data-code="F102" data-name="공사계약서(상세)">선택</button></td>
-                <td>공사계약서(상세)</td><td>상세형 계약서</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="modal-footer"><button class="btn btn-secondary" data-coreui-dismiss="modal">닫기</button></div>
-      </div>
-    </div>
-  </div>
+	<!-- 모달: 결재선 지정 -->
+	<div class="modal fade" id="apprLineModal" tabindex="-1"
+		aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">결재선 지정</h5>
+					<button type="button" class="btn-close" data-coreui-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="d-flex gap-3">
+						<div class="flex-grow-1">
+							<div
+								class="d-flex justify-content-between align-items-center mb-2">
+								<div class="fw-semibold">직원 목록(예시)</div>
+								<input id="empSearch" class="form-control form-control-sm"
+									style="max-width: 220px;" placeholder="이름 검색(구현중)">
+							</div>
+							<table class="table table-sm table-hover">
+								<tbody id="empListBody">
 
-  <!-- 모달: 결재선 지정 -->
-  <div class="modal fade" id="apprLineModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">결재선 지정</h5>
-          <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="d-flex gap-3">
-            <div class="flex-grow-1">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="fw-semibold">직원 목록(예시)</div>
-                <input class="form-control form-control-sm" style="max-width:220px;" placeholder="이름 검색(미구현)">
-              </div>
-              <table class="table table-sm table-hover">
-                <tbody>
-                  <tr>
-                    <td>홍길동</td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-primary btn-add-approver"
-                              data-approver-id="101" data-approver-name="홍길동">추가</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>김영희</td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-primary btn-add-approver"
-                              data-approver-id="205" data-approver-name="김영희">추가</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>이철수</td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-primary btn-add-approver"
-                              data-approver-id="309" data-approver-name="이철수">추가</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div style="width:330px;">
-              <div class="fw-semibold mb-2">선택된 결재자</div>
-              <ol id="approverList" class="list-group list-group-numbered small"></ol>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline-secondary" id="btnClearApprovers">초기화</button>
-          <button class="btn btn-primary" data-coreui-dismiss="modal">확인</button>
-        </div>
-      </div>
-    </div>
-  </div>
+								</tbody>
+							</table>
+						</div>
+						<div style="width: 330px;">
+							<div class="fw-semibold mb-2">선택된 결재자</div>
+							<ol id="approverList"
+								class="list-group list-group-numbered small"></ol>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-outline-secondary" id="btnClearApprovers">초기화</button>
+					<button class="btn btn-primary" data-coreui-dismiss="modal">확인</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </section>
 
 <th:block layout:fragment="pageScripts">
-  <script th:src="@{/js/approval-write.js}" defer></script>
+	<script th:src="@{/js/approval-write.js}" defer></script>
 </th:block>
 
 </html>
