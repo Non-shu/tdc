@@ -9,6 +9,6 @@ public class ApprovalFormVO {
   private String formName;
   private String description;
   private String contentTemplate;
-  private Boolean active;
+  private String active;
   private LocalDateTime createdAt;
 }

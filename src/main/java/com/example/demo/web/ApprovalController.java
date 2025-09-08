@@ -31,5 +31,11 @@ public class ApprovalController {
 		return "views/approval/detail";
 	}
 	
+	@GetMapping("/receive")
+	public String recerive(Model model) {
+		model.addAttribute("breadcrumb","수신함");
+		return "views/approval/receive";
+	}
+	
 	
 }

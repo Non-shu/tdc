@@ -12,7 +12,8 @@ import com.example.demo.domain.ApprovalStatus;
 @Mapper
 public interface ApprovalDocumentMapper {
 	int insert(ApprovalDocumentVO doc); //useGeneratedKeys
-	ApprovalDocumentVO findById(@Param("id") Long id);
+	ApprovalDocumentVO findById(@Param("docId") Long docId);
+
 	List<ApprovalDocumentVO> findMyDrafts(@Param("userId") Long userId);
 	
 	List<ApprovalDocumentVO> findByStatus(@Param("userId") Long userId,

@@ -1,0 +1,75 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.mybatis.ApprovalReceiveMapper">
+
+  <resultMap id="InboxMap" type="ApprovalInboxVO">
+    <result column="doc_id"     property="docId"/>
+    <result column="title"      property="title"/>
+    <result column="drafter_nm" property="drafterName"/>
+    <result column="recv_status" property="recvStatus"/>
+    <result column="status_nm"  property="statusNm"/>
+    <result column="notified_at_fmt" property="notifiedAt"/>
+    <result column="read_at_fmt"     property="readAt"/>
+    <result column="attach_cnt"  property="attachCnt"/>
+  </resultMap>
+
+  <sql id="inboxSelect">
+    SELECT
+      r.doc_id,
+      d.title,
+      e.emp_nm                 AS drafter_nm,
+      r.recv_status,
+      CASE r.recv_status
+        WHEN 'WAIT' THEN '대기'
+        WHEN 'APPROVED' THEN '승인'
+        WHEN 'REJECT' THEN '반려'
+        ELSE r.recv_status
+      END                     AS status_nm,
+      DATE_FORMAT(r.notified_at, '%Y-%m-%d %H:%i') AS notified_at_fmt,
+      DATE_FORMAT(r.read_at,     '%Y-%m-%d %H:%i') AS read_at_fmt,
+      IFNULL(att.cnt,0)       AS attach_cnt
+    FROM approval_receive r
+    JOIN approval_document d ON d.doc_id = r.doc_id
+    JOIN emp e               ON e.emp_id = d.drafter_id
+    /* 로그인ID → 수신자 매칭 (login_id가 Principal이면 안전) */
+    JOIN emp me              ON me.emp_id = r.approver_id
+    LEFT JOIN (
+      SELECT doc_id, COUNT(*) AS cnt
+      FROM approval_attachment
+      GROUP BY doc_id
+    ) att ON att.doc_id = r.doc_id
+    <where>
+      me.login_id = #{loginId}
+      <if test="status != null and status != ''">
+        AND r.recv_status = #{status}
+      </if>
+      <if test="read != null and read != ''">
+        AND (
+          (#{read} = 'Y' AND r.read_at IS NOT NULL)
+          OR
+          (#{read} = 'N' AND r.read_at IS NULL)
+        )
+      </if>
+      <if test="keyword != null and keyword != ''">
+        AND (d.title LIKE CONCAT('%', #{keyword}, '%')
+          OR  e.emp_nm LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+      <if test="fromDate != null"> AND DATE(r.notified_at) &gt;= #{fromDate} </if>
+      <if test="toDate   != null"> AND DATE(r.notified_at) &lt;= #{toDate}   </if>
+    </where>
+  </sql>
+
+  <select id="selectInbox" resultMap="InboxMap">
+    <include refid="inboxSelect"/>
+    ORDER BY r.notified_at DESC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countInbox" resultType="long">
+    SELECT COUNT(1)
+    FROM (
+      <include refid="inboxSelect"/>
+    ) x
+  </select>
+</mapper>

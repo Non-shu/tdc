@@ -17,13 +17,13 @@
     SELECT form_code, form_name, description, content_template, active, created_at
     FROM approval_form
     WHERE form_code = #{formCode}
-      AND active = TRUE
+      AND active = 'Y'
   </select>
 
   <select id="findAllActiveOrderByName" resultMap="FormMap">
     SELECT form_code, form_name, description, content_template, active, created_at
     FROM approval_form
-    WHERE active = TRUE
+    WHERE active = 'Y'
     ORDER BY form_name ASC
   </select>
 </mapper>

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,11 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.ApprovalDocumentVO;
+import com.example.demo.domain.ApprovalInboxVO;
 import com.example.demo.domain.ApprovalLineVO;
 import com.example.demo.domain.ApprovalStatus;
 import com.example.demo.repository.mybatis.ApprovalDocumentMapper;
 import com.example.demo.repository.mybatis.ApprovalFormMapper;
 import com.example.demo.repository.mybatis.ApprovalLineMapper;
+import com.example.demo.repository.mybatis.ApprovalReceiveMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +26,7 @@ public class ApprovalServiceImpl implements ApprovalService {
   private final ApprovalDocumentMapper docMapper;
   private final ApprovalLineMapper lineMapper;
   private final ApprovalFormMapper formMapper;
+  private final ApprovalReceiveMapper ReceiveMapper;
 
   @Override @Transactional
   public long saveTemp(ApprovalDocumentVO doc, List<ApprovalLineVO> lines) {
@@ -98,6 +102,16 @@ public class ApprovalServiceImpl implements ApprovalService {
   @Override
   public Optional<ApprovalDocumentVO> findDoc(long docId) {
     return Optional.ofNullable(docMapper.findById(docId));
+  }
+  
+  @Override
+  public List<ApprovalInboxVO> getInbox(String loginId, String status, String read, String keyword, LocalDate from, LocalDate to, int limit, int offset){
+	  return ReceiveMapper.selectInbox(loginId, status, read, keyword, from, to, limit, offset);
+  }
+  
+  @Override
+  public long countInbox(String loginId, String status, String read, String keyword, LocalDate from, LocalDate to) {
+	  return ReceiveMapper.countInbox(loginId, status, read, keyword, from, to);
   }
 
 }

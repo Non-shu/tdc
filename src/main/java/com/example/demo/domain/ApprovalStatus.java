@@ -1,5 +1,10 @@
 package com.example.demo.domain;
 
 public enum ApprovalStatus {
-	SUBMITTED, IN_PROGRESS, APPROVED, REJECTED, CANCELED, TEMP
+	SUBMIT //상신(대기)
+	, INPROG //진행
+	, APPROVED //최종승인
+	, REJECTED //반려
+	, CANCELED //취소
+	, DRAFT //임시
 }
