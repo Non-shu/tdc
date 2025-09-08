@@ -1,55 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.example.demo.repository.mybatis.ApprovalLineMapper">
 
   <resultMap id="ApprovalLineMap" type="com.example.demo.domain.ApprovalLineVO">
-    <id     property="lineId"    column="line_id"/>
-    <result property="docId"     column="doc_id"/>
-    <result property="stepNo"    column="step_no"/>
+    <id     property="lineId"     column="line_id"/>
+    <result property="docId"      column="doc_id"/>
+    <result property="stepNo"     column="step_no"/>
     <result property="approverId" column="approver_id"/>
-    <result property="decision"  column="decision"/>
-    <result property="decidedAt" column="decided_at"/>
-    <result property="comment"   column="comment"/>
-    <result property="appro
-    verName"     column="approver_name"/>
-    <result property="approverDeptName" column="approver_dept_name"/>
+    <result property="decision"   column="decision"/>
+    <result property="decidedAt"  column="decided_at"/>
+    <result property="comment"    column="comment"/>
   </resultMap>
 
-  <insert id="bulkInsert" parameterType="java.util.List">
-    INSERT INTO approval_line (doc_id, step_no, approver_id, decision, comment)
+  <insert id="bulkInsert">
+    INSERT INTO approval_line (doc_id, step_no, approver_id, decision)
     VALUES
-    <foreach collection="list" item="l" separator=",">
-      (#{l.docId}, #{l.stepNo}, #{l.approverId},
-       #{l.decision, jdbcType=VARCHAR}, #{l.comment})
+    <foreach collection="list" item="it" separator=",">
+      (#{it.docId}, #{it.stepNo}, #{it.approverId}, COALESCE(#{it.decision}, 'PENDING'))
     </foreach>
   </insert>
 
-  <delete id="deleteByDocId" parameterType="long">
+  <delete id="deleteByDocId">
     DELETE FROM approval_line WHERE doc_id = #{docId}
   </delete>
 
-  <select id="selectByDocId" parameterType="long" resultMap="ApprovalLineMap">
-    SELECT l.*,
-           e.emp_name  AS approver_name,
-           d.dept_name AS approver_dept_name
-      FROM approval_line l
-      JOIN employee   e ON e.emp_id  = l.approver_id
-      LEFT JOIN department d ON d.dept_id = e.dept_id
-     WHERE l.doc_id = #{docId}
-     ORDER BY l.step_no
+  <select id="selectByDocId" resultMap="ApprovalLineMap">
+    SELECT line_id, doc_id, step_no, approver_id, decision, decided_at, comment
+      FROM approval_line
+     WHERE doc_id = #{docId}
+     ORDER BY step_no ASC
   </select>
 
-  <update id="updateDecision">
+  <update id="updateStatus">
     UPDATE approval_line
-       SET decision = #{decision},
-           decided_at = CASE
-                          WHEN #{decision} IN ('APPROVED','REJECTED')
-                          THEN CURRENT_TIMESTAMP
-                          ELSE decided_at
-                        END
+       SET decision = #{lineStatus}
      WHERE line_id = #{lineId}
   </update>
-
 </mapper>

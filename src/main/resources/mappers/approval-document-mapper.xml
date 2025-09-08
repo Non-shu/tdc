@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.example.demo.repository.mybatis.ApprovalDocumentMapper">
 
   <resultMap id="DocMap" type="com.example.demo.domain.ApprovalDocumentVO">
@@ -16,16 +15,14 @@
     <result property="createdAt" column="created_at"/>
   </resultMap>
 
-  <insert id="insert"
-          parameterType="com.example.demo.domain.ApprovalDocumentVO"
+  <insert id="insert" parameterType="com.example.demo.domain.ApprovalDocumentVO"
           useGeneratedKeys="true" keyProperty="docId">
-    INSERT INTO approval_document
-      (form_code, title, content, status, created_by)
-    VALUES
-      (#{formCode}, #{title}, #{content}, #{status}, #{createdBy})
+    INSERT INTO approval_document (form_code, title, content, status, created_by)
+    VALUES (#{formCode}, #{title}, #{content},
+            #{status, typeHandler=org.apache.ibatis.type.EnumTypeHandler}, #{createdBy})
   </insert>
 
-  <select id="findById" resultMap="DocMap">
+  <select id="findById" parameterType="long" resultMap="DocMap">
     SELECT doc_id, form_code, title, content, status, created_by, created_at
     FROM approval_document
     WHERE doc_id = #{docId}
@@ -35,7 +32,7 @@
     SELECT doc_id, form_code, title, content, status, created_by, created_at
     FROM approval_document
     WHERE created_by = #{userId}
-      AND status = 'TEMP'
+      AND status = 'DRAFT'
     ORDER BY doc_id DESC
   </select>
 
@@ -43,19 +40,16 @@
     SELECT doc_id, form_code, title, content, status, created_by, created_at
     FROM approval_document
     WHERE created_by = #{userId}
-      AND status = #{status,javaType=com.example.demo.domain.ApprovalStatus,
-                     typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+      AND status = #{status, typeHandler=org.apache.ibatis.type.EnumTypeHandler}
     ORDER BY doc_id DESC
   </select>
 
-  <update id="updateTemp"
-          parameterType="com.example.demo.domain.ApprovalDocumentVO">
+  <update id="updateTemp" parameterType="com.example.demo.domain.ApprovalDocumentVO">
     UPDATE approval_document
-    SET form_code = #{formCode},
-        title     = #{title},
-        content   = #{content}
-    WHERE doc_id = #{docId}
-      AND status = 'TEMP'
+       SET form_code = #{formCode},
+           title     = #{title},
+           content   = #{content}
+     WHERE doc_id = #{docId}
+       AND status = 'DRAFT'
   </update>
-
 </mapper>

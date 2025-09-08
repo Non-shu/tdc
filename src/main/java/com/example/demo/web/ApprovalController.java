@@ -13,17 +13,21 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/approval")
 public class ApprovalController {
 	
-	@GetMapping("/list")
+	private final com.example.demo.repository.mybatis.ApprovalFormMapper formMapper;
+
+	  @GetMapping("/write")
+	  public String write(Model model) {
+	    model.addAttribute("forms", formMapper.findAllActiveOrderByName());
+	    model.addAttribute("breadcrumb", "문서 작성");
+	    return "views/approval/write";
+	    }
+	  
+	  @GetMapping("/list")
 	public String list(Model model) {
 		model.addAttribute("breadcrumb", "결재함");
 		return "views/approval/list";
 	}
 	
-	@GetMapping("/write")
-	public String write(Model model) {
-		model.addAttribute("breadcrumb", "결재 작성");
-		return "views/approval/write";
-	}
 
 	@GetMapping("/{id}")
 	public String detail(@PathVariable Long id, Model model) {
