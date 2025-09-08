@@ -15,6 +15,7 @@ import com.example.demo.repository.mybatis.ApprovalDocumentMapper;
 import com.example.demo.repository.mybatis.ApprovalFormMapper;
 import com.example.demo.repository.mybatis.ApprovalLineMapper;
 import com.example.demo.repository.mybatis.ApprovalReceiveMapper;
+import com.example.demo.support.CurrentUser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,14 +33,15 @@ public class ApprovalServiceImpl implements ApprovalService {
   public long saveTemp(ApprovalDocumentVO doc, List<ApprovalLineVO> lines) {
     ensureFormCode(doc);
     ensureCreatedBy(doc);
-    return persistNewDocWithLines(doc, lines, ApprovalStatus.TEMP);
+    doc.setCreatedBy(CurrentUser.id());
+    return persistNewDocWithLines(doc, lines, ApprovalStatus.DRAFT);
   }
 
   @Override @Transactional
   public long submit(ApprovalDocumentVO doc, List<ApprovalLineVO> lines) {
     ensureFormCode(doc);
     ensureCreatedBy(doc);
-    return persistNewDocWithLines(doc, lines, ApprovalStatus.SUBMITTED);
+    return persistNewDocWithLines(doc, lines, ApprovalStatus.SUBMIT);
   }
 
   private void ensureFormCode(ApprovalDocumentVO doc) {
