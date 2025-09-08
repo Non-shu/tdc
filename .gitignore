@@ -37,3 +37,25 @@ application-*.local.properties
 application-dev.properties
 application-prod.properties
 
+# --- Local env & secrets ---
+.env
+.env.*
+!.env.example
+
+# Spring profiles with secrets (commit examples only)
+src/main/resources/application-mariadb.properties
+src/main/resources/application-*.local.properties
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+!src/main/resources/application-mariadb.properties.example
+!src/main/resources/application-dev.properties.example
+!src/main/resources/application-prod.properties.example
+
+# 안전하게 커밋해도 되는 프로필(예: 데모/H2)은 제외하지 않음
+# ex) src/main/resources/application-h2.properties  (추적 OK)
+
+# 편의
+*.log
+logs/
+
+
