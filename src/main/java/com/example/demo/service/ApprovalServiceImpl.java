@@ -28,12 +28,12 @@ public class ApprovalServiceImpl implements ApprovalService {
   private final ApprovalLineMapper lineMapper;
   private final ApprovalFormMapper formMapper;
   private final ApprovalReceiveMapper ReceiveMapper;
+  private final CurrentUser currentUser;
 
   @Override @Transactional
   public long saveTemp(ApprovalDocumentVO doc, List<ApprovalLineVO> lines) {
     ensureFormCode(doc);
     ensureCreatedBy(doc);
-    doc.setCreatedBy(CurrentUser.id());
     return persistNewDocWithLines(doc, lines, ApprovalStatus.DRAFT);
   }
 
