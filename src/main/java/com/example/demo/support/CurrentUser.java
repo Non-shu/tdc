@@ -1,17 +1,25 @@
 package com.example.demo.support;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
 import com.example.demo.repository.mybatis.EmpMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
+@RequestScope
 @RequiredArgsConstructor
 public class CurrentUser {
 	private final EmpMapper mapper;
+	
+	public String loginId() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return (auth == null ? null : auth.getName());
+	}
 
 	public Long id() {
 		var ctx = SecurityContextHolder.getContext();
@@ -24,5 +32,10 @@ public class CurrentUser {
 		if (empId == null)
 			throw new IllegalStateException("사원 미존재: " + empNo);
 		return empId;
+	}
+	
+	public String name() {
+		Long id = id();
+		return (id == null ? null : mapper.findEmpNameById(id));
 	}
 }

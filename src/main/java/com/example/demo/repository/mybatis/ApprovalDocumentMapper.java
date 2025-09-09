@@ -1,6 +1,7 @@
 package com.example.demo.repository.mybatis;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,4 +21,8 @@ public interface ApprovalDocumentMapper {
 											@Param("status") ApprovalStatus status);
 	
 	int updateTemp(ApprovalDocumentVO doc);
+	
+	int updateStatus(@Param("docId") long docId, @Param("status") String status);
+	
+	Map<String,Object> findHeader(@Param("docId") long docId);
 }

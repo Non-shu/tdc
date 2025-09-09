@@ -2,9 +2,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.repository.mybatis.EmpMapper">
+<!-- 로그인 아이디(사번) -> emp_id -->
   <select id="findIdByEmpNo" parameterType="string" resultType="long">
     SELECT emp_id
     FROM emp
     WHERE emp_no = #{empNo}
+    LIMIT 1
+  </select>
+  <!-- 결재선 후보 조회: 이름/사번/부서명 키워드 검색, 없으면 전체 -->
+  <select id="findApprovers" parameterType="string" resultType="map">
+    SELECT
+      e.emp_id   AS id,
+      e.emp_nm   AS name,
+      d.dept_nm  AS dept
+    FROM emp e
+    LEFT JOIN dept d ON e.dept_id = d.dept_id
+    WHERE e.use_yn = 'Y'
+    <if test="keyword != null and keyword != ''">
+      AND (
+           e.emp_nm   LIKE CONCAT('%', #{keyword}, '%')
+        OR e.emp_no   LIKE CONCAT('%', #{keyword}, '%')
+        OR d.dept_nm  LIKE CONCAT('%', #{keyword}, '%')
+      )
+    </if>
+    ORDER BY e.emp_nm
+    LIMIT 30
+  </select>
+  
+  <select id="findEmpNameById" resultType="String">
+  SELECT emp_nm
+  FROM emp
+  WHERE emp_id = #{empId}
   </select>
 </mapper>

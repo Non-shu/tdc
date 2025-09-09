@@ -52,4 +52,21 @@
      WHERE doc_id = #{docId}
        AND status = 'DRAFT'
   </update>
+  
+  <update id="updateStatus">
+  UPDATE approval_document SET status = #{status} WHERE doc_id = #{docId}
+</update>
+
+<select id="findHeader" resultType="map">
+  SELECT d.doc_id,
+         d.title,
+         d.content                 AS contentHtml,
+         d.status,
+         d.created_at,
+         e.emp_nm                  AS drafter_name
+  FROM approval_document d
+  JOIN emp e ON e.emp_id = d.created_by
+  WHERE d.doc_id = #{docId}
+</select>
+
 </mapper>

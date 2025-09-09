@@ -3,21 +3,24 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.repository.mybatis.ApprovalLineMapper">
 
+  <!-- DB 컬럼명 ↔ VO 프로퍼티 매핑 -->
+  <!-- VO에 stepStatus, actedAt, commentTx 프로퍼티가 있다고 가정 -->
   <resultMap id="ApprovalLineMap" type="com.example.demo.domain.ApprovalLineVO">
     <id     property="lineId"     column="line_id"/>
     <result property="docId"      column="doc_id"/>
     <result property="stepNo"     column="step_no"/>
     <result property="approverId" column="approver_id"/>
-    <result property="decision"   column="decision"/>
-    <result property="decidedAt"  column="decided_at"/>
-    <result property="comment"    column="comment"/>
+    <result property="stepStatus" column="step_status"/>
+    <result property="actedAt"    column="acted_at"/>
+    <result property="commentTx"  column="comment_tx"/>
   </resultMap>
 
+  <!-- 일괄 등록: decision → step_status 로 변경 (DB 기본값 'SUBMIT') -->
   <insert id="bulkInsert">
-    INSERT INTO approval_line (doc_id, step_no, approver_id, decision)
+    INSERT INTO approval_line (doc_id, step_no, approver_id, step_status)
     VALUES
     <foreach collection="list" item="it" separator=",">
-      (#{it.docId}, #{it.stepNo}, #{it.approverId}, COALESCE(#{it.decision}, 'PENDING'))
+      (#{it.docId}, #{it.stepNo}, #{it.approverId}, COALESCE(#{it.stepStatus}, 'SUBMIT'))
     </foreach>
   </insert>
 
@@ -26,15 +29,82 @@
   </delete>
 
   <select id="selectByDocId" resultMap="ApprovalLineMap">
-    SELECT line_id, doc_id, step_no, approver_id, decision, decided_at, comment
-      FROM approval_line
-     WHERE doc_id = #{docId}
-     ORDER BY step_no ASC
+    SELECT
+      line_id, doc_id, step_no, approver_id,
+      step_status, acted_at, comment_tx
+    FROM approval_line
+    WHERE doc_id = #{docId}
+    ORDER BY step_no ASC
   </select>
 
+  <!-- 상태 변경: decision → step_status -->
   <update id="updateStatus">
     UPDATE approval_line
-       SET decision = #{lineStatus}
+       SET step_status = #{lineStatus}
      WHERE line_id = #{lineId}
   </update>
+  
+  <select id="findMyStepNo" resultType="int">
+  SELECT step_no
+  FROM approval_line
+  WHERE doc_id = #{docId} AND approver_id = #{approverId}
+</select>
+
+<update id="approveMyLine">
+  UPDATE approval_line
+     SET step_status = 'APPROVED', acted_at = CURRENT_TIMESTAMP
+   WHERE doc_id = #{docId}
+     AND approver_id = #{approverId}
+     AND step_status IN ('SUBMIT','INPROG')
+</update>
+
+<update id="rejectMyLine">
+  UPDATE approval_line
+     SET step_status = 'REJECTED', acted_at = CURRENT_TIMESTAMP
+   WHERE doc_id = #{docId}
+     AND approver_id = #{approverId}
+     AND step_status IN ('SUBMIT','INPROG')
+</update>
+
+<select id="countPendingInStep" resultType="int">
+  SELECT COUNT(1)
+  FROM approval_line
+  WHERE doc_id = #{docId}
+    AND step_no = #{stepNo}
+    AND step_status IN ('SUBMIT','INPROG')
+</select>
+
+<select id="findNextStepNo" resultType="int">
+  SELECT MIN(step_no)
+  FROM approval_line
+  WHERE doc_id = #{docId} AND step_no > #{currentStepNo}
+</select>
+
+<!-- 결재자 이름 포함 -->
+<select id="selectWithNames" resultMap="ApprovalLineMap">
+  SELECT l.line_id, l.doc_id, l.step_no, l.approver_id, l.step_status, l.acted_at, l.comment_tx,
+         e.emp_nm AS approver_name
+  FROM approval_line l
+  JOIN emp e ON e.emp_id = l.approver_id
+  WHERE l.doc_id = #{docId}
+  ORDER BY l.step_no
+</select>
+
+<!-- 내 차례 여부: 내가 대기/진행 상태이고, 남은 단계 중 최솟값이 내 단계 -->
+<select id="canAct" resultType="boolean">
+  SELECT CASE WHEN EXISTS (
+    SELECT 1
+      FROM approval_line me
+     WHERE me.doc_id = #{docId}
+       AND me.approver_id = #{approverId}
+       AND me.step_status IN ('SUBMIT','INPROG')
+       AND me.step_no = (
+           SELECT MIN(l2.step_no)
+             FROM approval_line l2
+            WHERE l2.doc_id = #{docId}
+              AND l2.step_status IN ('SUBMIT','INPROG')
+       )
+  ) THEN TRUE ELSE FALSE END
+</select>
+
 </mapper>

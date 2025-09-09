@@ -1,45 +1,46 @@
-<!-- templates/views/receive.html -->
+<!-- templates/views/approval/receive.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/layout}">
-	
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
 <section layout:fragment="content">
-  <!-- 여기부터 페이지 실제 내용 -->
+  <!-- Toast UI Grid -->
   <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css">
   <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 
   <style>
-    .page{max-width:1180px;margin:24px auto;padding:0 16px}
-    .toolbar{display:flex;gap:8px;align-items:center;margin:12px 0}
-    .toolbar input,.toolbar select{height:32px;padding:0 8px}
-    #grid{height:640px;border-radius:10px;overflow:hidden}
+    .page { max-width:1180px; margin:24px auto; padding:0 16px; }
+    .toolbar { display:flex; gap:8px; align-items:center; margin:12px 0; flex-wrap:wrap; }
+    .toolbar input,.toolbar select { height:32px; padding:0 8px; }
+    #grid { height:640px; border-radius:10px; overflow:hidden; }
   </style>
 
   <div class="page">
-    <h3>수신함</h3>
+    <h3 class="mb-2">수신함</h3>
 
     <div class="toolbar">
-      <select id="f-status">
+      <select id="f-status" title="상태">
         <option value="">상태: 전체</option>
-        <option value="WAIT">대기</option>
+        <option value="SUBMIT">대기</option>
         <option value="APPROVED">승인</option>
-        <option value="REJECT">반려</option>
+        <option value="REJECTED">반려</option>
       </select>
-      <select id="f-read">
+      <select id="f-read" title="읽음">
         <option value="">읽음: 전체</option>
         <option value="N">안읽음</option>
         <option value="Y">읽음</option>
       </select>
       <input id="f-from" type="date"><span>~</span><input id="f-to" type="date">
-      <input id="f-q" type="text" placeholder="제목/기안자 검색">
-      <button id="btn-search" type="button">조회</button>
+      <input id="f-q" type="text" placeholder="제목/기안자 검색" style="min-width:220px">
+      <button id="btn-search" type="button" class="btn btn-outline-primary btn-sm">조회</button>
     </div>
 
     <div id="grid"></div>
   </div>
 
   <script>
+    // Grid
     const grid = new tui.Grid({
       el: document.getElementById('grid'),
       bodyHeight: 'fitToParent',
@@ -48,27 +49,33 @@
       header: { height: 40 },
       rowHeaders: ['checkbox'],
       columns: [
-        { header: '상태', name:'statusNm', width:90, align:'center' },
-        { header: '제목', name:'title', minWidth:360,
-          formatter: ({value, row}) => {
-            const f = row.attachCnt>0 ? ` <span style="color:#64748b">(${row.attachCnt}개)</span>` : '';
-            return `<a href="/docs/${row.docId}">${value??''}</a>${f}`;
+        { header: '상태', name: 'statusNm', width: 90, align: 'center' },
+        {
+          header: '제목', name: 'title', minWidth: 360,
+          formatter: ({ value, row }) => {
+            const f = row.attachCnt > 0 ? ` <span style="color:#64748b">(${row.attachCnt}개)</span>` : '';
+            const title = value ?? '';
+            return `<a href="/approval/${row.docId}" style="text-decoration:none;color:#0d6efd">${title}</a>${f}`;
           }
         },
-        { header: '기안자', name:'drafterName', width:140 },
-        { header: '도착', name:'notifiedAt', width:160 },
-        { header: '읽음', name:'readAt', width:140,
-          formatter: ({value}) => value ? value : '<b style="color:#ef4444">안읽음</b>' }
+        { header: '기안자', name: 'drafterName', width: 140 },
+        { header: '도착',   name: 'notifiedAt', width: 160 },
+        {
+          header: '읽음', name: 'readAt', width: 120, align: 'center',
+          formatter: ({ value }) => value ? value : '<b style="color:#ef4444">안읽음</b>'
+        }
       ],
       data: { api: { readData: { url: '/api/receive', method: 'GET' } } }
     });
 
+    // 더블클릭 시 상세 이동
     grid.on('dblclick', ev => {
       const r = grid.getRow(ev.rowKey);
-      if (r) location.href = `/docs/${r.docId}`;
+      if (r && r.docId != null) location.href = `/approval/${r.docId}`;
     });
 
-    function params(page=1){
+    // 파라미터 구성 & 로드
+    function params(page = 1) {
       return {
         page,
         perPage: grid.getPagination()._options.itemsPerPage,
@@ -79,10 +86,19 @@
         keyword: document.getElementById('f-q').value
       };
     }
-    function reload(page=1){ grid.readData(page, params(page), true); }
-    document.getElementById('btn-search').addEventListener('click', ()=> reload(1));
+    function reload(page = 1) {
+      grid.readData(page, params(page), true);
+    }
+
+    // 이벤트
+    document.getElementById('btn-search').addEventListener('click', () => reload(1));
+    document.getElementById('f-q').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') reload(1);
+    });
+
+    // 첫 로드
     reload(1);
   </script>
 </section>
-</th:block>
+
 </html>

@@ -19,4 +19,18 @@ public interface ApprovalLineMapper {
 
     int updateStatus(@Param("lineId") Long lineId,
                      @Param("lineStatus") String lineStatus);
+    
+    Integer findMyStepNo(@Param("docId") long docId, @Param("approverId") long approverId);
+    
+    int approveMyLine(@Param("docId") long docId, @Param("approverId") long approverId);
+    
+    int rejectMyLine(@Param("docId") long docId, @Param("approverId") long approverId);
+    
+    int countPendingInStep(@Param("docId") long docId, @Param("stepNo") int stepNo);
+    
+    Integer findNextStepNo(@Param("docId") long docId, @Param("currentStepNo") int currentStepNo);
+    
+    List<ApprovalLineVO> selectWithNames(@Param("docId") long docId);
+    
+    boolean canAct(@Param("docId") long docId, @Param("approverId") long approvrId);
 }

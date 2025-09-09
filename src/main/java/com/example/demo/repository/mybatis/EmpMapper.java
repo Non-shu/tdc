@@ -1,16 +1,18 @@
 package com.example.demo.repository.mybatis;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface EmpMapper {
-	@Select("""
-			SELECT emp_id
-			FROM emp
-			WHERE emp_no = #{empNo}
-			 AND active = 'Y'
-			""")
-	Long findIdByEmpNo(@Param("empNo")String empNo);
+	 // 로그인 아이디(사번) -> emp_id
+    Long findIdByEmpNo(@Param("empNo") String empNo);
+
+    // 결재선 후보 조회 (keyword 없으면 전체)
+    List<Map<String, Object>> findApprovers(@Param("keyword") String keyword);
+    
+    String findEmpNameById(@Param("empId") Long empId);
 }

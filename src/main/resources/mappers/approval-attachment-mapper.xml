@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.mybatis.ApprovalAttachmentMapper">
+
+  <!-- VO 매핑 -->
+  <resultMap id="AttMap" type="com.example.demo.domain.ApprovalAttachmentVO">
+    <id     property="attId"       column="att_id"/>
+    <result property="docId"       column="doc_id"/>
+    <result property="filename"    column="filename"/>
+    <result property="path"        column="path"/>
+    <result property="size"        column="size"/>
+    <result property="contentType" column="content_type"/>
+    <result property="uploadedBy"  column="uploaded_by"/>
+    <result property="createdAt"   column="created_at"/>
+  </resultMap>
+
+  <!-- 생성 -->
+  <insert id="insert"
+          parameterType="com.example.demo.domain.ApprovalAttachmentVO"
+          useGeneratedKeys="true" keyProperty="attId" keyColumn="att_id">
+    INSERT INTO approval_attachment
+      (doc_id, filename, path, size, content_type, uploaded_by)
+    VALUES
+      (#{docId}, #{filename}, #{path}, #{size}, #{contentType}, #{uploadedBy})
+  </insert>
+
+  <insert id="bulkInsert">
+    INSERT INTO approval_attachment
+      (doc_id, filename, path, size, content_type, uploaded_by)
+    VALUES
+    <foreach collection="list" item="f" separator=",">
+      (#{f.docId}, #{f.filename}, #{f.path}, #{f.size}, #{f.contentType}, #{f.uploadedBy})
+    </foreach>
+  </insert>
+
+  <!-- 조회 -->
+  <select id="findById" resultMap="AttMap">
+    SELECT att_id, doc_id, filename, path, size, content_type, uploaded_by, created_at
+      FROM approval_attachment
+     WHERE att_id = #{attId}
+  </select>
+
+  <select id="findByDocId" resultMap="AttMap">
+    SELECT att_id, doc_id, filename, path, size, content_type, uploaded_by, created_at
+      FROM approval_attachment
+     WHERE doc_id = #{docId}
+     ORDER BY att_id
+  </select>
+
+  <select id="countByDocId" resultType="long">
+    SELECT COUNT(*) FROM approval_attachment WHERE doc_id = #{docId}
+  </select>
+
+  <!-- 다운로드/인라인 응답용 최소 메타 -->
+  <select id="findMeta" resultMap="AttMap">
+    SELECT att_id, doc_id, filename, path, size, content_type
+      FROM approval_attachment
+     WHERE att_id = #{attId}
+  </select>
+
+  <!-- 삭제 -->
+  <delete id="deleteById">
+    DELETE FROM approval_attachment WHERE att_id = #{attId}
+  </delete>
+
+  <delete id="deleteByDocId">
+    DELETE FROM approval_attachment WHERE doc_id = #{docId}
+  </delete>
+
+</mapper>

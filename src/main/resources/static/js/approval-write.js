@@ -286,7 +286,7 @@
         approvers.forEach(function(a){ form.append('approvers', a.id); });
         files.forEach(function(f){ form.append('files', f); });
 
-        postForm('/api/approval/submit', form)
+        postForm('/api/submit', form)
           .done(function(){ afterSuccess(status); })
           .fail(afterFail)
           .always(function(){ setSubmitting(false); });
@@ -298,7 +298,7 @@
           status: status,
           approvers: approvers.map(function(a){ return Number(a.id); })
         };
-        postJson('/api/approval/submit', body)
+        postJson('/api/submit', body)
           .done(function(){ afterSuccess(status); })
           .fail(afterFail)
           .always(function(){ setSubmitting(false); });

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.mybatis.ApprovalStatusHistMapper">
+  <insert id="insertHist">
+    INSERT INTO approval_status_hist (doc_id, from_status, to_status, actor_id, memo_tx)
+    VALUES (#{param1}, #{param2}, #{param3}, #{param4}, #{param5})
+  </insert>
+</mapper>
