@@ -25,4 +25,6 @@ public interface ApprovalDocumentMapper {
 	int updateStatus(@Param("docId") long docId, @Param("status") String status);
 	
 	Map<String,Object> findHeader(@Param("docId") long docId);
+	
+	Map<String,Object> findHeaderByDocId(@Param("docId") long docId);
 }

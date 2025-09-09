@@ -107,4 +107,26 @@
   ) THEN TRUE ELSE FALSE END
 </select>
 
+<select id="findLinesForDetail" resultType="com.example.demo.domain.ApprovalLineVO">
+  SELECT
+    l.doc_id,
+    l.step_no      AS stepNo,
+    l.approver_id  AS approverId,
+    e.emp_nm       AS approverName,
+    l.step_status  AS stepStatus,
+    l.acted_at     AS actedAt
+  FROM approval_line l
+  JOIN emp e ON e.emp_id = l.approver_id
+  WHERE l.doc_id = #{docId}
+  ORDER BY l.step_no, l.line_id
+</select>
+
+<select id="existsMyPendingLine" resultType="int">
+  SELECT COUNT(1)
+  FROM approval_line
+  WHERE doc_id = #{docId}
+    AND approver_id = #{empId}
+    AND step_status IN ('SUBMIT','INPROG')
+</select>
+
 </mapper>

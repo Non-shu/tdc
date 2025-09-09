@@ -21,6 +21,15 @@
     VALUES (#{formCode}, #{title}, #{content},
             #{status, typeHandler=org.apache.ibatis.type.EnumTypeHandler}, #{createdBy})
   </insert>
+  
+  <update id="updateDocument" parameterType="map">
+  UPDATE approval_document
+     SET title = #{title},
+         content = #{content},
+         status = #{status},
+         updated_at = CURRENT_TIMESTAMP
+   WHERE doc_id = #{docId}
+</update>
 
   <select id="findById" parameterType="long" resultMap="DocMap">
     SELECT doc_id, form_code, title, content, status, created_by, created_at
@@ -64,6 +73,19 @@
          d.status,
          d.created_at,
          e.emp_nm                  AS drafter_name
+  FROM approval_document d
+  JOIN emp e ON e.emp_id = d.created_by
+  WHERE d.doc_id = #{docId}
+</select>
+
+<select id="findHeaderByDocId" resultType="map">
+  SELECT
+    d.doc_id,
+    d.title,
+    d.status,
+    d.created_at,
+    d.content  AS contentHtml,
+    e.emp_nm        AS drafter_name
   FROM approval_document d
   JOIN emp e ON e.emp_id = d.created_by
   WHERE d.doc_id = #{docId}

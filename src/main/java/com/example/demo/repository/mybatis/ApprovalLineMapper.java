@@ -33,4 +33,8 @@ public interface ApprovalLineMapper {
     List<ApprovalLineVO> selectWithNames(@Param("docId") long docId);
     
     boolean canAct(@Param("docId") long docId, @Param("approverId") long approvrId);
+    
+    int existsMyPendingLine(@Param("docId") Long docId, @Param("empId") Long empId);
+    
+    List<ApprovalLineVO> findLinesForDetail(@Param("docId") long docId);
 }
