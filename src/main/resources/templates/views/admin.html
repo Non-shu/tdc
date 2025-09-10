@@ -1,6 +1,8 @@
-<th:block th:with="title='Admin Dashboard'"
-          th:replace="~{layout/layout :: ~{::section}}">
-  <section>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+  <section layout:fragment="content">
     <div class="row g-4">
       <div class="col-sm-6 col-lg-3">
         <div class="card text-white bg-danger">

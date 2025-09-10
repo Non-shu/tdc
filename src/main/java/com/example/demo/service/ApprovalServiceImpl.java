@@ -41,7 +41,7 @@ public class ApprovalServiceImpl implements ApprovalService {
   private final CurrentUser currentUser;
 
   // 업로드 경로는 한 곳만 사용 (uploadRoot)
-  @Value("${file.upload.dir:/var/app/uploads/approval}")
+  @Value("${file.upload.dir:${file.upload-dir:/var/app/uploads/approval}}")
   private String uploadRoot;
 
   /* ---------- Public APIs ---------- */
@@ -124,22 +124,26 @@ public class ApprovalServiceImpl implements ApprovalService {
   @Transactional
   public void saveAttachments(Long docId, List<MultipartFile> files) {
     if (files == null || files.isEmpty()) return;
-    Long me = currentUser.id();
 
-    Path docDir = Paths.get(uploadRoot, String.valueOf(docId));
+    // 윈도우/리눅스 모두 안전하게 정규화
+    Path root = Paths.get(uploadRoot).toAbsolutePath().normalize();
+    Path docDir = root.resolve(String.valueOf(docId)).normalize();
     try {
-      Files.createDirectories(docDir);
+      Files.createDirectories(docDir); // 상위 폴더 보장
     } catch (IOException e) {
       throw new RuntimeException("첨부 저장 경로 생성 실패: " + docDir, e);
     }
 
     List<ApprovalAttachmentVO> toSave = new ArrayList<>();
+    Long me = currentUser.id();
+
     for (MultipartFile mf : files) {
       if (mf.isEmpty()) continue;
 
       String original = Path.of(mf.getOriginalFilename()).getFileName().toString();
-      String stored = System.currentTimeMillis() + "_" + original; // 간단 유니크
-      Path target = docDir.resolve(stored);
+      String stored   = System.currentTimeMillis() + "_" + original;
+      Path target     = docDir.resolve(stored).normalize();
+
       try {
         mf.transferTo(target.toFile());
       } catch (IOException e) {
@@ -149,15 +153,14 @@ public class ApprovalServiceImpl implements ApprovalService {
       ApprovalAttachmentVO vo = new ApprovalAttachmentVO();
       vo.setDocId(docId);
       vo.setFilename(original);
-      vo.setPath(target.toString());
+      // (지금은 기존 데이터 호환 위해 “절대경로/상대경로 둘 다” 처리 가능하게 둡니다)
+      vo.setPath(target.toString()); // 추후 root.relativize(target)로 바꾸면 더 이식성 좋아짐
       vo.setSize(mf.getSize());
-      vo.setContentType(mf.getContentType() != null ? mf.getContentType() : "application/octet-stream"); // null 가드
+      vo.setContentType(mf.getContentType() != null ? mf.getContentType() : "application/octet-stream");
       vo.setUploadedBy(me);
       toSave.add(vo);
     }
-    if (!toSave.isEmpty()) {
-      attachmentMapper.bulkInsert(toSave);
-    }
+    if (!toSave.isEmpty()) attachmentMapper.bulkInsert(toSave);
   }
 
   /* ---------- Helpers ---------- */
