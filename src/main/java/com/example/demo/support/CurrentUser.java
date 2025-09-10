@@ -1,41 +1,43 @@
 package com.example.demo.support;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 import com.example.demo.repository.mybatis.EmpMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
-@RequestScope
 @RequiredArgsConstructor
 public class CurrentUser {
-	private final EmpMapper mapper;
-	
-	public String loginId() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		return (auth == null ? null : auth.getName());
-	}
 
-	public Long id() {
-		var ctx = SecurityContextHolder.getContext();
-		var auth = (ctx != null) ? ctx.getAuthentication() : null;
-		if (auth == null || !auth.isAuthenticated()) {
-			throw new AccessDeniedException("로그인 필요");
-		}
-		String empNo = auth.getName(); // 로그인 아이디 = 사번(직원코드)라고 가정
-		Long empId = mapper.findIdByEmpNo(empNo);
-		if (empId == null)
-			throw new IllegalStateException("사원 미존재: " + empNo);
-		return empId;
-	}
-	
-	public String name() {
-		Long id = id();
-		return (id == null ? null : mapper.findEmpNameById(id));
-	}
+    private final EmpMapper empMapper;
+
+    /**
+     * 현재 로그인 사용자의 emp_id 반환.
+     * - 로그인 주체 이름(username)을 loginKey로 간주 (사번 또는 로그인아이디)
+     * - emp_no 또는 login_id 어느 쪽이든 매칭되면 emp_id 리턴
+     */
+    public long id() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String loginKey = (auth == null ? null : auth.getName());
+
+        if (loginKey == null || loginKey.isBlank()) {
+            throw new IllegalStateException("로그인 정보 없음");
+        }
+
+        Long empId = empMapper.findIdByLoginKey(loginKey);
+        if (empId == null) {
+            // 기존 메시지 형식 유지
+            throw new IllegalStateException("사원 미존재: " + loginKey);
+        }
+        return empId;
+    }
+
+    /** 필요하면 사용 */
+    public String loginKey() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth == null ? null : auth.getName());
+    }
 }

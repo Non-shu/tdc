@@ -23,6 +23,7 @@
 		</div>
 
 		<div class="row g-4">
+			<!-- 본문 -->
 			<div class="col-12 col-xl-9 col-editor">
 				<div class="content-inner">
 					<div class="mb-2">
@@ -36,10 +37,11 @@
 							<div id="editorHost"></div>
 						</div>
 					</div>
-										
+
 					<div class="mb-3">
 						<label for="fileInput" class="form-label">첨부파일 (선택)</label> <input
-							id="fileInput" name="files" class="form-control" type="file" multiple>
+							id="fileInput" name="files" class="form-control" type="file"
+							multiple>
 						<div class="form-text" id="fileNames">선택된 파일 없음</div>
 					</div>
 
@@ -52,24 +54,28 @@
 					</div>
 
 					<!-- hidden: 호환을 위해 둘 다 둠 -->
-					<input type="hidden" id="formId" name="formCode" value=""> <input
-						type="hidden" id="apprformId" name="apprformCode" value=""> <input
-						type="hidden" id="approverIds" name="approverIds" value="">
+					<input type="hidden" id="formId" name="formCode" value="">
+					<input type="hidden" id="apprformId" name="apprformCode" value="">
+					<input type="hidden" id="approverIds" name="approverIds" value="">
 				</div>
 			</div>
 
+			<!-- 사이드 -->
 			<aside class="col-12 col-xl-3 col-side">
 				<div class="card sticky-aside">
 					<div class="card-header">문서 정보</div>
 					<div class="card-body small">
 						<div class="d-flex justify-content-between">
-							<span>기안자</span><span th:text="${#authentication?.name}">admin</span>
+							<span>기안자</span> <span th:text="${#authentication?.name ?: '-'}">-</span>
 						</div>
 						<div class="d-flex justify-content-between">
-							<span>부서</span><span>-</span>
+							<span>부서</span>
+							<!-- 지금은 서버에서 부서명을 주지 않으므로 고정 대시로 표시 -->
+							<span id="drafterDept">-</span>
 						</div>
+
 						<div class="d-flex justify-content-between">
-							<span>작성일</span><span
+							<span>작성일</span> <span
 								th:text="${#dates.format(#dates.createNow(),'yyyy-MM-dd HH:mm')}">-</span>
 						</div>
 						<hr>
@@ -101,7 +107,7 @@
 							</tr>
 						</thead>
 						<tbody id="formListBody">
-							<!-- data-id: 실제 form_id (예시), data-code: 폴백용 코드 -->
+							<!-- 예시: 실제로는 /api/forms 에서 읽어옴 -->
 							<tr>
 								<td><button
 										class="btn btn-sm btn-outline-primary btn-select-form"
@@ -153,9 +159,7 @@
 									style="max-width: 220px;" placeholder="이름 검색(구현중)">
 							</div>
 							<table class="table table-sm table-hover">
-								<tbody id="empListBody">
-
-								</tbody>
+								<tbody id="empListBody"></tbody>
 							</table>
 						</div>
 						<div style="width: 330px;">

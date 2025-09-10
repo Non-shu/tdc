@@ -15,4 +15,7 @@ public interface EmpMapper {
     List<Map<String, Object>> findApprovers(@Param("keyword") String keyword);
     
     String findEmpNameById(@Param("empId") Long empId);
+    
+    Long findIdByLoginKey(@Param("k") String loginKey);
+    
 }

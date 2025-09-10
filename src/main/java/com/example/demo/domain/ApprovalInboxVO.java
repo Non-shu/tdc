@@ -13,4 +13,7 @@ public class ApprovalInboxVO {
 		private String notifiedAt;
 		private String readAt;
 		private Integer attachCnt;
+		
+		private String actedAt;
+		private String myTurn;
 }

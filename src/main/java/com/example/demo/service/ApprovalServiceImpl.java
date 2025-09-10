@@ -178,18 +178,22 @@ public class ApprovalServiceImpl implements ApprovalService {
   public void approve(long docId) {
     Long me = currentUser.id();
 
-    // 1) 내 단계 확인 (결재 대상자 아니면 예외)
     Integer myStep = lineMapper.findMyStepNo(docId, me);
     if (myStep == null) throw new IllegalStateException("결재 대상자가 아닙니다.");
 
-    // 2) 내 라인 승인 (멱등: 이미 처리돼 있으면 0)
-    int changed = lineMapper.approveMyLine(docId, me);
-    if (changed == 0) return;
+    // (선택) UX용 사전 체크
+    if (!lineMapper.canAct(docId, me)) {
+      throw new IllegalStateException("아직 내 차례가 아닙니다.");
+    }
 
-    // 3) 내 수신함 상태 갱신
+    // ★ DB가 순차강제: 내 차례가 아니면 0건
+    int changed = lineMapper.approveMyLine(docId, me);
+    if (changed == 0) throw new IllegalStateException("아직 내 차례가 아닙니다.");
+
+    // 내 수신함 상태 갱신
     receiveMapper.updateReceiveStatus(docId, me, "APPROVED");
 
-    // 4) 같은 단계 미처리 인원 남았는지 확인
+    // 같은 단계 남은 사람?
     int remain = lineMapper.countPendingInStep(docId, myStep);
     if (remain > 0) {
       docMapper.updateStatus(docId, "INPROG");
@@ -197,7 +201,7 @@ public class ApprovalServiceImpl implements ApprovalService {
       return;
     }
 
-    // 5) 다음 단계 오픈 or 최종 승인
+    // 다음 단계 오픈 or 최종승인
     Integer next = lineMapper.findNextStepNo(docId, myStep);
     if (next != null) {
       receiveMapper.insertReceivesForStep(docId, next);
@@ -217,11 +221,15 @@ public class ApprovalServiceImpl implements ApprovalService {
     Integer myStep = lineMapper.findMyStepNo(docId, me);
     if (myStep == null) throw new IllegalStateException("결재 대상자가 아닙니다.");
 
+    if (!lineMapper.canAct(docId, me)) {
+      throw new IllegalStateException("아직 내 차례가 아닙니다.");
+    }
+
+    // ★ DB가 순차강제
     int changed = lineMapper.rejectMyLine(docId, me);
-    if (changed == 0) return;
+    if (changed == 0) throw new IllegalStateException("아직 내 차례가 아닙니다.");
 
     receiveMapper.updateReceiveStatus(docId, me, "REJECTED");
-    // 남아있는 대기 수신 닫기
     receiveMapper.closePendingReceives(docId, "REJECTED");
 
     docMapper.updateStatus(docId, "REJECTED");

@@ -1,150 +1,310 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <section layout:fragment="content">
-  <div class="row g-4">
+	<div class="row g-4">
 
-    <!-- 본문 영역 -->
-    <div class="col-12 col-xl-9">
-      <!-- 제목 + 본문 -->
-      <div class="card shadow-sm mb-3">
-        <div class="card-body">
-          <h5 class="mb-3"
-              th:utext="${header != null && header['title'] != null ? header['title'] : '제목 없음'}">제목</h5>
+		<div class="col-12 col-xl-9">
+			<div class="card shadow-sm mb-3">
+				<!-- 제목만 분리 -->
+				<div class="card-header py-3">
+					<h5 class="card-title mb-0"
+						th:utext="${header != null && header['title'] != null ? header['title'] : '제목 없음'}">
+						제목</h5>
+				</div>
+				<!-- 본문 -->
+				<div class="card-body">
+					<div id="docBody" class="border rounded p-3 doc-body"
+						th:utext="${header != null ? header['contentHtml'] : ''}">
+						본문 HTML</div>
+				</div>
+			</div>
 
-          <!-- 저장된 HTML -->
-          <div id="docBody" class="border rounded p-3"
-               th:utext="${header != null ? header['contentHtml'] : ''}">
-            본문 HTML
-          </div>
-        </div>
-      </div>
+			<!-- 첨부 -->
+			<div class="card shadow-sm">
+				<div class="card-header">첨부파일</div>
+				<div class="card-body">
+					<ul class="list-group"
+						th:if="${attachments != null and !#lists.isEmpty(attachments)}">
+						<li
+							class="list-group-item d-flex justify-content-between align-items-center"
+							th:each="a : ${attachments}">
+							<div class="text-truncate">
+								<a th:href="@{|/files/download/${a.attId}|}"
+									th:text="${a.filename}" class="text-decoration-none">filename</a>
+								<small class="text-body-secondary ms-2"
+									th:text="${a.contentType}">type</small> <small
+									class="text-body-secondary ms-1"
+									th:text="${#numbers.formatInteger((a.size ?: 0)/1024,0)} + ' KB'">size</small>
+							</div> <a class="btn btn-sm btn-outline-primary"
+							th:href="@{|/files/inline/${a.attId}|}" target="_blank">새창</a>
+						</li>
+					</ul>
+					<div class="text-body-secondary"
+						th:if="${attachments == null or #lists.isEmpty(attachments)}">첨부
+						없음</div>
+				</div>
+			</div>
+		</div>
 
-      <!-- 첨부 -->
-      <div class="card shadow-sm">
-        <div class="card-header">첨부파일</div>
-        <div class="card-body">
-          <ul class="list-group"
-              th:if="${attachments != null and !#lists.isEmpty(attachments)}">
-            <li class="list-group-item d-flex justify-content-between align-items-center"
-                th:each="a : ${attachments}">
-              <div class="text-truncate">
-                <a th:href="@{|/files/download/${a.attId}|}"
-                   th:text="${a.filename}" class="text-decoration-none">filename</a>
-                <small class="text-body-secondary ms-2"
-                       th:text="${a.contentType}">type</small>
-                <small class="text-body-secondary ms-1"
-                       th:text="${#numbers.formatInteger((a.size ?: 0)/1024,0)} + ' KB'">size</small>
-              </div>
-              <a class="btn btn-sm btn-outline-primary"
-                 th:href="@{|/files/inline/${a.attId}|}" target="_blank">새창</a>
-            </li>
-          </ul>
-          <div class="text-body-secondary"
-               th:if="${attachments == null or #lists.isEmpty(attachments)}">첨부 없음</div>
-        </div>
-      </div>
-    </div>
+		<!-- 사이드 -->
+		<aside class="col-12 col-xl-3 approval-aside">
+			<div class="sticky-aside">
 
-    <!-- 사이드(고정) -->
-    <aside class="col-12 col-xl-3 approval-aside">
-      <div class="sticky-aside" style="position:sticky;top:84px;">
+				<!-- 문서 정보 + 액션 -->
+				<div class="card mb-3">
+					<div
+						class="card-header d-flex justify-content-between align-items-center">
+						문서 정보
+						<div class="d-flex gap-2">
+							<button type="button" class="btn btn-primary btn-sm"
+								id="btnApprove" th:attr="data-docid=${docId}"
+								th:disabled="${(canAct ?: false)} == false">승인</button>
+							<button type="button" class="btn btn-outline-danger btn-sm"
+								id="btnReject" th:attr="data-docid=${docId}"
+								th:disabled="${(canAct ?: false)} == false">반려</button>
+						</div>
+					</div>
 
-        <!-- 문서 정보 + 액션 -->
-        <div class="card mb-3">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            문서 정보
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-primary btn-sm"
-                      id="btnApprove" th:attr="data-docid=${docId}"
-                      th:disabled="${!(canAct ?: false)}">승인</button>
-              <button type="button" class="btn btn-outline-danger btn-sm"
-                      id="btnReject" th:attr="data-docid=${docId}"
-                      th:disabled="${!(canAct ?: false)}">반려</button>
-            </div>
-          </div>
-          <div class="card-body small">
-            <div class="d-flex justify-content-between">
-              <span>문서 ID</span><span th:text="${docId}">-</span></div>
-            <div class="d-flex justify-content-between">
-              <span>기안자</span>
-              <span th:text="${header != null ? header['drafter_name'] : '-'}">-</span></div>
-            <div class="d-flex justify-content-between">
-              <span>작성일</span>
-              <span th:text="${header != null && header['created_at'] != null
-                              ? #temporals.format(header['created_at'], 'yyyy-MM-dd HH:mm')
-                              : '-'}">-</span></div>
-            <div class="d-flex justify-content-between">
-              <span>상태</span>
-              <span class="badge text-bg-secondary"
-                    th:text="${header != null ? header['status'] : '-'}">-</span></div>
-            <hr>
-            <div class="d-flex justify-content-between">
-              <span>결재 가능여부</span>
-              <span th:text="${(canAct ?: false)} ? '예' : '아니오'">-</span></div>
-          </div>
+					<div class="card-body small">
+						<div class="d-flex justify-content-between">
+							<span>문서 ID</span><span th:text="${docId}">-</span>
+						</div>
 
-          <!-- CSRF (널가드) : AJAX에서 읽어감 -->
-          <div th:if="${_csrf != null}">
-            <input type="hidden" id="csrfHeader" th:value="${_csrf.headerName}">
-            <input type="hidden" id="csrfToken"  th:value="${_csrf.token}">
-          </div>
-        </div>
+						<div class="d-flex justify-content-between">
+							<span>기안자</span> <span
+								th:text="${header != null ? header['drafter_name'] : '-'}">-</span>
+						</div>
 
-        <!-- 결재선 -->
-        <div class="card aside-approval">
-          <div class="card-header">결재선</div>
-          <div class="card-body p-0">
-            <table class="table table-hover mb-0 align-middle">
-              <thead class="table-light">
-              <tr>
-                <th style="width:70px;">단계</th>
-                <th>결재자</th>
-                <th style="width:100px;">상태</th>
-                <th style="width:120px;">처리시각</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr th:each="l : ${lines}">
-                <td th:text="${l.stepNo}">1</td>
-                <td th:text="${l.approverName}">홍길동</td>
-                <td th:text="${l.stepStatus}">SUBMIT</td>
-                <td th:text="${l.actedAt} ?: '-'">-</td>
-              </tr>
-              <tr th:if="${lines == null or #lists.isEmpty(lines)}">
-                <td colspan="4" class="text-center text-body-secondary py-4">
-                  결재선 정보가 없습니다.
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+						<!-- created_at은 Timestamp라고 가정 → #dates -->
+						<div class="d-flex justify-content-between">
+							<span>작성일</span> <span
+								th:text="${header != null && header['created_at'] != null ? #dates.format(header['created_at'], 'yyyy-MM-dd HH:mm') : '-'}">-</span>
+						</div>
 
-      </div>
-    </aside>
-  </div>
+						<div class="d-flex justify-content-between">
+							<span>상태</span> <span class="badge"
+								th:classappend="${header != null && header['status'] == 'APPROVED' ? ' text-bg-success' :
+                                    (header != null && header['status'] == 'REJECTED' ? ' text-bg-danger' :
+                                    (header != null && header['status'] == 'INPROG'   ? ' text-bg-info'
+                                                                                      : ' text-bg-secondary'))}"
+								th:text="${header == null ? '-' :
+                             (header['status'] == 'APPROVED' ? '결재' :
+                             (header['status'] == 'REJECTED' ? '반려'  :
+                             (header['status'] == 'INPROG'   ? '진행중' : '대기')))}">대기</span>
+						</div>
+
+						<hr />
+						<div class="d-flex justify-content-between">
+							<span>결재 가능여부</span> <span
+								th:text="${(canAct ?: false)} ? '예' : '아니오'">아니오</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- CSRF (AJAX용) -->
+				<div th:if="${_csrf != null}">
+					<input type="hidden" id="csrfHeader" th:value="${_csrf.headerName}">
+					<input type="hidden" id="csrfToken" th:value="${_csrf.token}">
+				</div>
+
+				<!-- 결재선 -->
+				<div class="card">
+					<div class="card-header">결재선</div>
+					<div class="card-body p-0">
+						<table class="table table-hover mb-0 align-middle aside-approval">
+							<thead class="table-light">
+								<tr>
+									<th class="col-step">단계</th>
+									<th>결재자</th>
+									<th class="col-status">상태</th>
+									<th class="col-acted">처리시각</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="l : ${lines}">
+									<td th:text="${l.stepNo}">1</td>
+									<td th:text="${l.approverName}">홍길동</td>
+									<td><span class="badge"
+										th:classappend="${l.stepStatus == 'APPROVED' ? ' text-bg-success' :
+                                          (l.stepStatus == 'REJECTED' ? ' text-bg-danger' :
+                                          (l.stepStatus == 'INPROG'   ? ' text-bg-info'
+                                                                      : ' text-bg-secondary'))}"
+										th:text="${l.stepStatus == 'APPROVED' ? '결재' :
+                                   (l.stepStatus == 'REJECTED' ? '반려'  :
+                                   (l.stepStatus == 'INPROG'   ? '진행중' : '대기'))}">대기</span>
+									</td>
+									<!-- actedAt은 LocalDateTime이라 #temporals 사용 -->
+									<td
+										th:text="${l.actedAt != null ? #temporals.format(l.actedAt,'yyyy-MM-dd HH:mm') : '-'}">-</td>
+								</tr>
+								<tr th:if="${lines == null or #lists.isEmpty(lines)}">
+									<td colspan="4" class="text-center text-body-secondary py-4">결재선
+										정보가 없습니다.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+		</aside>
+
+	</div>
 </section>
 
-<!-- 이 화면 전용 스크립트 -->
+<!-- 전용 스크립트 -->
 <th:block layout:fragment="pageScripts">
-  <script th:src="@{/js/approval-detail.js}" defer></script>
+	<script th:src="@{/js/approval-detail.js}" defer></script>
+
+	<script>
+    // 본문 표 가독성 보정: 스크롤 래퍼 + 클래스 주입 + 넓은 표 감지
+    function decorateDocTables() {
+      const body = document.getElementById('docBody');
+      if (!body) return;
+
+      // 1) 모든 테이블을 가로 스크롤 가능한 래퍼에 감싼다
+      body.querySelectorAll('table').forEach((t) => {
+        // 이미 래퍼가 있으면 생략
+        if (!t.parentElement.classList.contains('doc-table-wrap')) {
+          const wrap = document.createElement('div');
+          wrap.className = 'doc-table-wrap';
+          t.parentNode.insertBefore(wrap, t);
+          wrap.appendChild(t);
+        }
+
+        // 2) 부트스트랩 톤 + 기본 패딩(겹치지 않게 add)
+        t.classList.add('table','table-bordered','table-sm','align-middle','doc-table');
+        t.querySelectorAll('th,td').forEach((c) => c.classList.add('p-2'));
+
+        // 3) "넓은 표" 감지: 헤더 컬럼수가 많으면(auto 레이아웃 + min-width + 스크롤)
+        const colCount =
+          (t.tHead && t.tHead.rows[0] ? t.tHead.rows[0].cells.length : 0) ||
+          t.rows[0]?.cells.length || 0;
+
+        if (colCount >= 8) {
+          // 넓은 표: squeezed 방지
+          t.classList.add('doc-table-wide');
+          // table-layout: auto로 바꿔 헤더 내용 길이에 따른 자연 폭 배분
+          t.style.tableLayout = 'auto';
+          // 표가 컨테이너보다 커지면 래퍼가 스크롤 처리
+          t.style.width = 'max-content';
+          t.style.minWidth = '100%';
+          // 헤더는 절대 줄바꿈/단어분해 금지
+          t.querySelectorAll('thead th').forEach(th => {
+            th.classList.add('k-nowrap');
+          });
+        } else {
+          // 일반 폼 표: 첫번째(라벨) th는 고정폭 + nowrap, 값 셀은 자유 줄바꿈
+          t.style.tableLayout = 'fixed';
+          t.style.width = '100%';
+          const firstColTh = t.querySelectorAll('tr > th:first-child');
+          firstColTh.forEach(th => th.classList.add('k-nowrap','k-label'));
+        }
+
+        // 4) 모든 헤더(th)는 한국어 단어 분해 금지(영문/숫자는 필요시 줄바꿈)
+        t.querySelectorAll('th').forEach(th => {
+          th.classList.add('k-keep-all');
+        });
+
+        // 5) 데이터 셀은 과도한 단어가 있을 때만 줄바꿈 허용
+        t.querySelectorAll('td').forEach(td => {
+          td.classList.add('k-wrap');
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', decorateDocTables);
+  </script>
 </th:block>
 
 <style>
-.aside-approval table { table-layout: fixed; }
-  .aside-approval th, .aside-approval td {
-    white-space: nowrap;         /* 헤더 줄바꿈 방지 */
-    font-size: .875rem;          /* 살짝 작게 */
-    font-weight: 400;            /* 볼드 빼기 */
-    letter-spacing: -0.2px;
-  }
-  .aside-approval thead th { vertical-align: middle; }
-  .aside-approval .col-step   { width: 70px; }
-  .aside-approval .col-status { width: 110px; }
-  .aside-approval .col-acted  { width: 160px; }
-  /* 결재자 컬럼은 auto (남는 공간 채우기) */
+/* ===== 래퍼: 표가 넓으면 가로 스크롤로 보이게 ===== */
+#docBody {
+	overflow: visible;
+}
+
+.doc-table-wrap {
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* ===== 공통 표 톤(본문) ===== */
+.doc-body .doc-table {
+	border-collapse: collapse;
+}
+
+/* 한국어 헤더(라벨)의 "글자 쪼개짐" 방지 */
+.k-keep-all {
+	word-break: keep-all;
+	overflow-wrap: normal;
+}
+
+/* 절대 줄바꿈 금지 + 말줄임(폭이 정말 좁을 때) */
+.k-nowrap {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+/* 라벨 셀(폼 표) 기본 폭 살짝 보장 */
+.k-label {
+	min-width: 10rem;
+} /* 필요 시 12rem/14rem로 늘려도 됨 */
+
+/* 데이터 셀: 너무 긴 토큰(영문URL/코드 등)만 적당히 줄바꿈 */
+.k-wrap {
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+/* 넓은 표 전용(지출내역표 같이 컬럼 많은 경우) → 헤더 폰트 조금만 줄이고 최소폭 보장 */
+.doc-table-wide thead th {
+	font-size: .9rem; /* 살짝 축소 */
+	min-width: 5.5rem; /* 헤더 텍스트가 한 줄에 들어갈 기본 폭 */
+	padding: .4rem .5rem; /* 공간 아끼기 */
+}
+
+/* 기본 폼 표(라벨/값 2컬럼 스타일)에 맞춘 기본값 */
+.doc-body table {
+	width: 100%;
+}
+
+.doc-body th, .doc-body td {
+	border: 1px solid var(--bs-border-color, #dee2e6);
+	padding: .6rem .75rem;
+	vertical-align: middle;
+}
+
+.doc-body th {
+	background: #fafafa;
+	font-weight: 600;
+	text-align: left;
+}
+
+/* aside 테이블 */
+.aside-approval {
+	table-layout: fixed;
+}
+
+.aside-approval th, .aside-approval td {
+	white-space: nowrap;
+	font-size: .875rem;
+	vertical-align: middle;
+}
+
+.aside-approval .col-step {
+	width: 70px;
+}
+
+.aside-approval .col-status {
+	width: 100px;
+}
+
+.aside-approval .col-acted {
+	width: 130px;
+}
 </style>
-</html>

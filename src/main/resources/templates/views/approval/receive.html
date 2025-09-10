@@ -10,10 +10,14 @@
   <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 
   <style>
-    .page { max-width:1180px; margin:24px auto; padding:0 16px; }
-    .toolbar { display:flex; gap:8px; align-items:center; margin:12px 0; flex-wrap:wrap; }
-    .toolbar input,.toolbar select { height:32px; padding:0 8px; }
-    #grid { height:640px; border-radius:10px; overflow:hidden; }
+    /* 페이지 폭을 좀 더 넓게 (필요시 수치 조절) */
+    .page { max-width: 1440px; margin: 24px auto; padding: 0 16px; }
+
+    .toolbar { display: flex; gap: 8px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+    .toolbar input, .toolbar select { height: 32px; padding: 0 8px; }
+
+    /* 그리드 높이 여유 */
+    #grid { height: 720px; border-radius: 10px; overflow: hidden; }
   </style>
 
   <div class="page">
@@ -40,34 +44,49 @@
   </div>
 
   <script>
-    // Grid
-    const grid = new tui.Grid({
-      el: document.getElementById('grid'),
-      bodyHeight: 'fitToParent',
-      rowHeight: 40,
-      pageOptions: { perPage: 20 },
-      header: { height: 40 },
-      rowHeaders: ['checkbox'],
-      columns: [
-        { header: '상태', name: 'statusNm', width: 90, align: 'center' },
-        {
-          header: '제목', name: 'title', minWidth: 360,
-          formatter: ({ value, row }) => {
-            const f = row.attachCnt > 0 ? ` <span style="color:#64748b">(${row.attachCnt}개)</span>` : '';
-            const title = value ?? '';
-            return `<a href="/approval/${row.docId}" style="text-decoration:none;color:#0d6efd">${title}</a>${f}`;
-          }
-        },
-        { header: '기안자', name: 'drafterName', width: 140 },
-        { header: '도착',   name: 'notifiedAt', width: 160 },
-        {
-          header: '읽음', name: 'readAt', width: 120, align: 'center',
-          formatter: ({ value }) => value ? value : '<b style="color:#ef4444">안읽음</b>'
-        }
-      ],
-      data: { api: { readData: { url: '/api/receive', method: 'GET' } } }
-    });
+    // 날짜 포맷 보정 (서버가 'yyyy-MM-dd HH:mm' 주면 그대로 쓰고, ISO면 T 제거)
+    const fmt = (s) => s ? String(s).replace('T',' ').slice(0,16) : '';
 
+    // 진행상황 칼럼 포매터
+    function progressCell(row) {
+      // 내가 처리했으면 처리 시각 노출
+      if (row.actedAt) return `<span class="text-body-secondary">${fmt(row.actedAt)}</span>`;
+      // 내 차례면 '미결'(빨간)
+      if (row.myTurn === 'Y') return `<b style="color:#ef4444">미결</b>`;
+      // 그 외는 '대기' (원치 않으면 '-' 로 바꿔도 됨)
+      return `<span class="text-secondary">대기</span>`;
+    }
+
+    const grid = new tui.Grid({
+        el: document.getElementById('grid'),
+        bodyHeight: 'fitToParent',
+        rowHeight: 40,
+        pageOptions: { perPage: 20 },
+        header: { height: 40 },
+        rowHeaders: ['checkbox'],
+        columns: [
+          { header: '상태', name: 'statusNm', width: 90, align: 'center' },
+          {
+            header: '제목', name: 'title', minWidth: 360,
+            formatter: ({ value, row }) => {
+              const f = row.attachCnt > 0 ? ` <span style="color:#64748b">(${row.attachCnt}개)</span>` : '';
+              const title = value ?? '';
+              return `<a href="/approval/${row.docId}" style="text-decoration:none;color:#0d6efd">${title}</a>${f}`;
+            }
+          },
+          { header: '기안자', name: 'drafterName', width: 140 },
+          { header: '상신일자',   name: 'notifiedAt', width: 160 },
+          // ▼ 여기 변경 (읽음 → 진행상황)
+          {
+            header: '진행상황', name: 'actedAt', width: 140, align: 'center',
+            formatter: ({ row }) =>
+              row.actedAt
+                ? row.actedAt
+                : (row.myTurn === 'Y' ? '<b style="color:#ef4444">미결</b>' : '-')
+          }
+        ],
+        data: { api: { readData: { url: '/api/receive', method: 'GET' } } }
+      });
     // 더블클릭 시 상세 이동
     grid.on('dblclick', ev => {
       const r = grid.getRow(ev.rowKey);

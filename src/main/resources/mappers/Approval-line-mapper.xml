@@ -3,8 +3,6 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.repository.mybatis.ApprovalLineMapper">
 
-  <!-- DB 컬럼명 ↔ VO 프로퍼티 매핑 -->
-  <!-- VO에 stepStatus, actedAt, commentTx 프로퍼티가 있다고 가정 -->
   <resultMap id="ApprovalLineMap" type="com.example.demo.domain.ApprovalLineVO">
     <id     property="lineId"     column="line_id"/>
     <result property="docId"      column="doc_id"/>
@@ -15,7 +13,6 @@
     <result property="commentTx"  column="comment_tx"/>
   </resultMap>
 
-  <!-- 일괄 등록: decision → step_status 로 변경 (DB 기본값 'SUBMIT') -->
   <insert id="bulkInsert">
     INSERT INTO approval_line (doc_id, step_no, approver_id, step_status)
     VALUES
@@ -29,104 +26,119 @@
   </delete>
 
   <select id="selectByDocId" resultMap="ApprovalLineMap">
-    SELECT
-      line_id, doc_id, step_no, approver_id,
-      step_status, acted_at, comment_tx
-    FROM approval_line
-    WHERE doc_id = #{docId}
-    ORDER BY step_no ASC
+    SELECT line_id, doc_id, step_no, approver_id, step_status, acted_at, comment_tx
+      FROM approval_line
+     WHERE doc_id = #{docId}
+     ORDER BY step_no ASC
   </select>
 
-  <!-- 상태 변경: decision → step_status -->
   <update id="updateStatus">
     UPDATE approval_line
        SET step_status = #{lineStatus}
      WHERE line_id = #{lineId}
   </update>
-  
+
   <select id="findMyStepNo" resultType="int">
-  SELECT step_no
-  FROM approval_line
-  WHERE doc_id = #{docId} AND approver_id = #{approverId}
-</select>
+    SELECT step_no
+      FROM approval_line
+     WHERE doc_id = #{docId}
+       AND approver_id = #{approverId}
+     LIMIT 1
+  </select>
 
-<update id="approveMyLine">
-  UPDATE approval_line
-     SET step_status = 'APPROVED', acted_at = CURRENT_TIMESTAMP
-   WHERE doc_id = #{docId}
-     AND approver_id = #{approverId}
-     AND step_status IN ('SUBMIT','INPROG')
-</update>
+  <!-- ★ 순차 강제: 내 step이 '미처리 최솟값'일 때만 승인 처리 -->
+  <update id="approveMyLine">
+    UPDATE approval_line l
+    JOIN (
+      SELECT MIN(step_no) AS cur_step
+        FROM approval_line
+       WHERE doc_id = #{docId}
+         AND step_status IN ('SUBMIT','INPROG')
+    ) s ON s.cur_step = l.step_no
+       AND l.doc_id = #{docId}
+       AND l.approver_id = #{approverId}
+       AND l.step_status IN ('SUBMIT','INPROG')
+    SET l.step_status = 'APPROVED',
+        l.acted_at    = CURRENT_TIMESTAMP
+  </update>
 
-<update id="rejectMyLine">
-  UPDATE approval_line
-     SET step_status = 'REJECTED', acted_at = CURRENT_TIMESTAMP
-   WHERE doc_id = #{docId}
-     AND approver_id = #{approverId}
-     AND step_status IN ('SUBMIT','INPROG')
-</update>
+  <!-- ★ 순차 강제: 내 step이 '미처리 최솟값'일 때만 반려 처리 -->
+  <update id="rejectMyLine">
+    UPDATE approval_line l
+    JOIN (
+      SELECT MIN(step_no) AS cur_step
+        FROM approval_line
+       WHERE doc_id = #{docId}
+         AND step_status IN ('SUBMIT','INPROG')
+    ) s ON s.cur_step = l.step_no
+       AND l.doc_id = #{docId}
+       AND l.approver_id = #{approverId}
+       AND l.step_status IN ('SUBMIT','INPROG')
+    SET l.step_status = 'REJECTED',
+        l.acted_at    = CURRENT_TIMESTAMP
+  </update>
 
-<select id="countPendingInStep" resultType="int">
-  SELECT COUNT(1)
-  FROM approval_line
-  WHERE doc_id = #{docId}
-    AND step_no = #{stepNo}
-    AND step_status IN ('SUBMIT','INPROG')
-</select>
+  <select id="countPendingInStep" resultType="int">
+    SELECT COUNT(1)
+      FROM approval_line
+     WHERE doc_id = #{docId}
+       AND step_no = #{stepNo}
+       AND step_status IN ('SUBMIT','INPROG')
+  </select>
 
-<select id="findNextStepNo" resultType="int">
-  SELECT MIN(step_no)
-  FROM approval_line
-  WHERE doc_id = #{docId} AND step_no > #{currentStepNo}
-</select>
+  <!-- 다음 단계: ‘미처리(SUBMIT/INPROG)’ 라인이 존재하는 최솟값 -->
+  <select id="findNextStepNo" resultType="int">
+    SELECT MIN(step_no)
+      FROM approval_line
+     WHERE doc_id = #{docId}
+       AND step_no > #{currentStepNo}
+       AND step_status IN ('SUBMIT','INPROG')
+  </select>
 
-<!-- 결재자 이름 포함 -->
-<select id="selectWithNames" resultMap="ApprovalLineMap">
-  SELECT l.line_id, l.doc_id, l.step_no, l.approver_id, l.step_status, l.acted_at, l.comment_tx,
-         e.emp_nm AS approver_name
-  FROM approval_line l
-  JOIN emp e ON e.emp_id = l.approver_id
-  WHERE l.doc_id = #{docId}
-  ORDER BY l.step_no
-</select>
+  <select id="selectWithNames" resultMap="ApprovalLineMap">
+    SELECT l.line_id, l.doc_id, l.step_no, l.approver_id, l.step_status, l.acted_at, l.comment_tx,
+           e.emp_nm AS approver_name
+      FROM approval_line l
+      JOIN emp e ON e.emp_id = l.approver_id
+     WHERE l.doc_id = #{docId}
+     ORDER BY l.step_no
+  </select>
 
-<!-- 내 차례 여부: 내가 대기/진행 상태이고, 남은 단계 중 최솟값이 내 단계 -->
-<select id="canAct" resultType="boolean">
-  SELECT CASE WHEN EXISTS (
-    SELECT 1
-      FROM approval_line me
-     WHERE me.doc_id = #{docId}
-       AND me.approver_id = #{approverId}
-       AND me.step_status IN ('SUBMIT','INPROG')
-       AND me.step_no = (
-           SELECT MIN(l2.step_no)
-             FROM approval_line l2
-            WHERE l2.doc_id = #{docId}
-              AND l2.step_status IN ('SUBMIT','INPROG')
-       )
-  ) THEN TRUE ELSE FALSE END
-</select>
+  <select id="canAct" resultType="boolean">
+    SELECT CASE WHEN EXISTS (
+      SELECT 1
+        FROM approval_line me
+       WHERE me.doc_id = #{docId}
+         AND me.approver_id = #{approverId}
+         AND me.step_status IN ('SUBMIT','INPROG')
+         AND me.step_no = (
+             SELECT MIN(l2.step_no)
+               FROM approval_line l2
+              WHERE l2.doc_id = #{docId}
+                AND l2.step_status IN ('SUBMIT','INPROG')
+         )
+    ) THEN TRUE ELSE FALSE END
+  </select>
 
-<select id="findLinesForDetail" resultType="com.example.demo.domain.ApprovalLineVO">
-  SELECT
-    l.doc_id,
-    l.step_no      AS stepNo,
-    l.approver_id  AS approverId,
-    e.emp_nm       AS approverName,
-    l.step_status  AS stepStatus,
-    l.acted_at     AS actedAt
-  FROM approval_line l
-  JOIN emp e ON e.emp_id = l.approver_id
-  WHERE l.doc_id = #{docId}
-  ORDER BY l.step_no, l.line_id
-</select>
+  <select id="findLinesForDetail" resultType="com.example.demo.domain.ApprovalLineVO">
+    SELECT l.doc_id,
+           l.step_no      AS stepNo,
+           l.approver_id  AS approverId,
+           e.emp_nm       AS approverName,
+           l.step_status  AS stepStatus,
+           l.acted_at     AS actedAt
+      FROM approval_line l
+      JOIN emp e ON e.emp_id = l.approver_id
+     WHERE l.doc_id = #{docId}
+     ORDER BY l.step_no, l.line_id
+  </select>
 
-<select id="existsMyPendingLine" resultType="int">
-  SELECT COUNT(1)
-  FROM approval_line
-  WHERE doc_id = #{docId}
-    AND approver_id = #{empId}
-    AND step_status IN ('SUBMIT','INPROG')
-</select>
+  <select id="existsMyPendingLine" resultType="int">
+    SELECT COUNT(1)
+      FROM approval_line
+     WHERE doc_id = #{docId}
+       AND approver_id = #{empId}
+       AND step_status IN ('SUBMIT','INPROG')
+  </select>
 
 </mapper>

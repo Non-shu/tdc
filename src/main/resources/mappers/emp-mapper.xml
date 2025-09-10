@@ -34,4 +34,14 @@
   FROM emp
   WHERE emp_id = #{empId}
   </select>
+  
+  <select id="findIdByLoginKey" parameterType="string" resultType="long">
+    SELECT e.emp_id
+      FROM emp e
+     WHERE e.emp_no   = #{k}
+        OR e.login_id = #{k}
+     LIMIT 1
+  </select>
+  
+
 </mapper>

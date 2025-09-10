@@ -34,7 +34,6 @@
 }
 
 /* t-fluid 표는 layout.css 규칙 사용 (table.t-fluid) */
-
 .approval-write-page .toastui-editor-contents td,
 .approval-write-page .toastui-editor-contents th {
   display:table-cell !important; float:none !important;
@@ -51,13 +50,9 @@
 .approval-write-page .toastui-editor-contents .t-scroll-x { padding-bottom:4px; }
 
 /* ===== 유동형(t-fluid) 표 보정 ===== */
-/* th/td 패딩을 살짝 주고, 헤더 라인 높이 맞춤 */
 .approval-write-page .toastui-editor-contents table.t-fluid th,
-.approval-write-page .toastui-editor-contents table.t-fluid td {
-  padding: 8px 10px;
-}
+.approval-write-page .toastui-editor-contents table.t-fluid td { padding: 8px 10px; }
 
-/* 숫자 계열 열은 오른쪽 정렬(백업 규칙) — JS에서 c8~c16 클래스를 붙여줌 */
 .approval-write-page .toastui-editor-contents table.t-fluid td.c8,
 .approval-write-page .toastui-editor-contents table.t-fluid td.c9,
 .approval-write-page .toastui-editor-contents table.t-fluid td.c10,
@@ -66,49 +61,22 @@
 .approval-write-page .toastui-editor-contents table.t-fluid td.c13,
 .approval-write-page .toastui-editor-contents table.t-fluid td.c14,
 .approval-write-page .toastui-editor-contents table.t-fluid td.c15,
-.approval-write-page .toastui-editor-contents table.t-fluid td.c16 {
-  text-align: right;
-}
+.approval-write-page .toastui-editor-contents table.t-fluid td.c16 { text-align: right; }
 
-/* 긴 텍스트 열(업체명/품명/규격/비고)은 줄바꿈 금지 옵션을 쓸 수 있음 — JS가 t-nowrap를 같이 붙임 */
 .approval-write-page .toastui-editor-contents table.t-fluid th.t-nowrap,
-.approval-write-page .toastui-editor-contents table.t-fluid td.t-nowrap {
-  white-space: nowrap;
-}
+.approval-write-page .toastui-editor-contents table.t-fluid td.t-nowrap { white-space: nowrap; }
 
-/* 가로 스크롤 박스 바닥 여백(스크롤바가 표 하단을 가리지 않게) — 유지 */
-.approval-write-page .toastui-editor-contents .t-scroll-x {
-  padding-bottom: 4px;
-}
+.approval-write-page .toastui-editor-contents .t-scroll-x { overflow-x:auto !important; overflow-y:hidden !important; padding-bottom:4px; }
 
-/* ===== 유동형(t-fluid) 코스트시트: 가로 확장 + 가로 스크롤 ===== */
-
-/* 1) 유동형 표는 줄바꿈 최소화(제목/헤더는 한 줄 유지) */
-.approval-write-page .toastui-editor-contents table.t-fluid th {
-  white-space: nowrap !important;
-}
-
-/* 2) 본문 셀은 기본은 줄바꿈(세로로 길어지지 않게 하고 싶으면 각 칸에 .t-nowrap를 주면 됨) */
-.approval-write-page .toastui-editor-contents table.t-fluid td {
-  white-space: normal !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere;
-}
-
-/* 3) 유동형 표를 감싸는 상자: 가로 스크롤 허용(세로는 에디터가 담당) */
-.approval-write-page .toastui-editor-contents .t-scroll-x {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  padding-bottom: 4px; /* 스크롤바가 표 하단을 가리지 않게 */
-}
-
-/* 4) 유동형 표 자체는 내용 폭에 맞춰 확장 */
 .approval-write-page .toastui-editor-contents table.t-fluid {
-  table-layout: auto !important;
-  width: max-content !important;
-  min-width: 100%;
+  table-layout:auto !important; width:max-content !important; min-width:100%;
 }
 
-/* 5) 기본 표(클래스 없는 표)는 기존 고정형 규칙 유지(이미 있던 규칙 유지) */
-/* .approval-write-page .toastui-editor-contents table:not(.t-fluid) { ... } 는 그대로 두세요 */
+/* ===== [NEW] 고정형 표 헤더 한글 갈라짐 방지 + 메타표 폭 고정 ===== */
+.approval-write-page .toastui-editor-contents table:not(.t-fluid) th {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
 
+/* 메타표(2/4칸)용 폭 — JS가 data-meta=1을 부여함 */
+.approval-write-page .toastui-editor-contents table[data-meta="1"] th { width: 14rem; }

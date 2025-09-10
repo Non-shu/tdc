@@ -5,8 +5,8 @@
 
 <mapper namespace="com.example.demo.repository.mybatis.ApprovalReceiveMapper">
 
-  <!-- 화면 바인딩 -->
-  <resultMap id="InboxMap" type="ApprovalInboxVO">
+  <!-- 목록에서 바인딩될 VO 매핑 -->
+  <resultMap id="InboxMap" type="com.example.demo.domain.ApprovalInboxVO">
     <result column="doc_id"          property="docId"/>
     <result column="title"           property="title"/>
     <result column="drafter_nm"      property="drafterName"/>
@@ -15,16 +15,18 @@
     <result column="notified_at_fmt" property="notifiedAt"/>
     <result column="read_at_fmt"     property="readAt"/>
     <result column="attach_cnt"      property="attachCnt"/>
+    <!-- 진행상황 표시용 파생 컬럼 -->
+    <result column="acted_at_fmt"    property="actedAt"/>
+    <result column="my_turn"         property="myTurn"/>
   </resultMap>
 
-  <!-- 공통 SELECT (loginId=emp_no) -->
+  <!-- 공통 SELECT (loginId = 사번/로그인ID -> approver_id 변환) -->
   <sql id="inboxSelect">
     SELECT
       r.doc_id,
       d.title,
       drafter.emp_nm                               AS drafter_nm,
       r.recv_status,
-      -- 상태 한글명 매핑(코드 테이블을 쓰거나 CASE로 매핑)
       CASE r.recv_status
         WHEN 'SUBMIT'   THEN '대기'
         WHEN 'INPROG'   THEN '진행'
@@ -34,20 +36,42 @@
       END                                           AS status_nm,
       DATE_FORMAT(r.notified_at, '%Y-%m-%d %H:%i')  AS notified_at_fmt,
       DATE_FORMAT(r.read_at,     '%Y-%m-%d %H:%i')  AS read_at_fmt,
-      IFNULL(att.cnt,0)                             AS attach_cnt
+      IFNULL(att.cnt,0)                             AS attach_cnt,
+
+      /* 진행상황: 내 결재선 행의 처리시각 */
+      DATE_FORMAT(al.acted_at, '%Y-%m-%d %H:%i')    AS acted_at_fmt,
+
+      /* 지금 내 차례 여부: 아직 처리 안했고 상태가 대기/진행이면 Y */
+      CASE
+        WHEN al.acted_at IS NULL
+         AND r.recv_status IN ('SUBMIT','INPROG') THEN 'Y'
+        ELSE 'N'
+      END AS my_turn
+
     FROM approval_receive r
-    JOIN approval_document d ON d.doc_id = r.doc_id
-    JOIN emp drafter         ON drafter.emp_id = d.created_by   <!-- 작성자 컬럼: created_by -->
+    JOIN approval_document d ON d.doc_id       = r.doc_id
+    JOIN emp drafter         ON drafter.emp_id = d.created_by
+
+    /* 내 결재선 1행(문서+나) */
+    LEFT JOIN approval_line al
+           ON al.doc_id = r.doc_id
+          AND al.approver_id = r.approver_id
+
+    /* 첨부 개수 */
     LEFT JOIN (
       SELECT doc_id, COUNT(*) AS cnt
-      FROM approval_attachment
-      GROUP BY doc_id
+        FROM approval_attachment
+       GROUP BY doc_id
     ) att ON att.doc_id = r.doc_id
+
     <where>
-      r.approver_id = (SELECT emp_id FROM emp WHERE emp_no = #{loginId})
+      /* 로그인 사용자의 approver_id로 필터링 */
+      r.approver_id = (SELECT e.emp_id FROM emp e WHERE e.emp_no = #{loginId} OR e.login_id = #{loginId})
+
       <if test="status != null and status != ''">
         AND r.recv_status = #{status}
       </if>
+
       <if test="read != null and read != ''">
         AND (
           (#{read} = 'Y' AND r.read_at IS NOT NULL)
@@ -55,15 +79,18 @@
           (#{read} = 'N' AND r.read_at IS NULL)
         )
       </if>
+
       <if test="keyword != null and keyword != ''">
-        AND (d.title  LIKE CONCAT('%', #{keyword}, '%')
+        AND (d.title LIKE CONCAT('%', #{keyword}, '%')
           OR drafter.emp_nm LIKE CONCAT('%', #{keyword}, '%'))
       </if>
+
       <if test="from != null"> AND DATE(r.notified_at) <![CDATA[>=]]> #{from} </if>
       <if test="to   != null"> AND DATE(r.notified_at) <![CDATA[<=]]> #{to}   </if>
     </where>
   </sql>
 
+  <!-- 목록 / 카운트 -->
   <select id="selectInbox" resultMap="InboxMap">
     <include refid="inboxSelect"/>
     ORDER BY r.notified_at DESC
@@ -77,7 +104,7 @@
     ) t
   </select>
 
-  <!-- 단건 수신행 생성(멱등) -->
+  <!-- 수신행(단건) 업서트: UQ(doc_id, approver_id) 사용 -->
   <insert id="insertReceive">
     INSERT INTO approval_receive (doc_id, approver_id, recv_status)
     VALUES (#{docId}, #{approverId}, #{recvStatus})
@@ -86,7 +113,7 @@
       notified_at = CURRENT_TIMESTAMP
   </insert>
 
-  <!-- 1차 결재선 대상자들을 수신함에 생성(상신 시 호출) -->
+  <!-- 상신 시: 1단계 결재자들을 수신함에 생성 -->
   <insert id="insertFirstStepReceives">
     INSERT INTO approval_receive (doc_id, approver_id, recv_status)
     SELECT l.doc_id, l.approver_id, l.step_status
@@ -97,30 +124,34 @@
       recv_status = VALUES(recv_status),
       notified_at = CURRENT_TIMESTAMP
   </insert>
-  
+
+  <!-- 라우팅 시: 다음 step 결재자들을 수신함에 생성 -->
+  <insert id="insertReceivesForStep">
+    INSERT INTO approval_receive (doc_id, approver_id, recv_status)
+    SELECT l.doc_id, l.approver_id, l.step_status
+      FROM approval_line l
+     WHERE l.doc_id = #{docId}
+       AND l.step_no = #{stepNo}
+    ON DUPLICATE KEY UPDATE
+      recv_status = VALUES(recv_status),
+      notified_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <!-- 내 수신행 상태 갱신(승인/반려 시 read_at 최초기록) -->
   <update id="updateReceiveStatus">
-  UPDATE approval_receive
-     SET recv_status = #{status},
-         read_at     = IFNULL(read_at, CURRENT_TIMESTAMP)
-   WHERE doc_id = #{docId} AND approver_id = #{approverId}
-</update>
+    UPDATE approval_receive
+       SET recv_status = #{status},
+           read_at     = IFNULL(read_at, CURRENT_TIMESTAMP)
+     WHERE doc_id = #{docId}
+       AND approver_id = #{approverId}
+  </update>
 
-<insert id="insertReceivesForStep">
-  INSERT INTO approval_receive (doc_id, approver_id, recv_status)
-  SELECT l.doc_id, l.approver_id, l.step_status
-    FROM approval_line l
-   WHERE l.doc_id = #{docId}
-     AND l.step_no = #{stepNo}
-  ON DUPLICATE KEY UPDATE
-    recv_status = VALUES(recv_status),
-    notified_at = CURRENT_TIMESTAMP
-</insert>
-
-<update id="closePendingReceives">
-  UPDATE approval_receive
-     SET recv_status = #{status}
-   WHERE doc_id = #{docId}
-     AND recv_status IN ('SUBMIT','INPROG')
-</update>
+  <!-- 문서 진행/종결 시 미결 수신행 정리 -->
+  <update id="closePendingReceives">
+    UPDATE approval_receive
+       SET recv_status = #{status}
+     WHERE doc_id = #{docId}
+       AND recv_status IN ('SUBMIT','INPROG')
+  </update>
 
 </mapper>

@@ -1,4 +1,4 @@
-/*! approval-write.js (clean full rewrite) */
+/*! approval-write.js (full) */
 (function () {
   function depsReady() {
     return !!(window.jQuery && window.toastui && window.toastui.Editor);
@@ -19,7 +19,6 @@
 
     function toast(msg){ alert(msg); }
 
-    // 일반/비동기 모두 지원 디바운스
     function debounce(fn, ms){
       var t; return function(){
         var ctx=this, args=arguments;
@@ -40,9 +39,10 @@
       $('#btnSubmit,#btnSaveTemp').prop('disabled', on);
     }
     function afterSuccess(status){
-      toast(status === 'SUBMITTED' ? '결재 상신 완료!' : '임시 저장 완료!');
+      toast(status === 'SUBMITTED' || status === 'INPROG' ? '결재 상신 완료!' : '임시 저장 완료!');
       setTimeout(function(){
-        window.location.replace(status === 'SUBMITTED' ? REDIRECT_AFTER_SUBMIT : REDIRECT_AFTER_TEMP);
+        var to = (status === 'SUBMITTED' || status === 'INPROG') ? REDIRECT_AFTER_SUBMIT : REDIRECT_AFTER_TEMP;
+        window.location.replace(to);
       }, 80);
     }
     function afterFail(xhr){
@@ -108,6 +108,39 @@
           el.style.maxHeight = 'none';
         }
       });
+
+      // 8) 메타표 colgroup 자동 주입
+      fixMetaTables();
+    }
+
+    // [NEW] 메타표(좌 레이블 / 우 값) colgroup 자동 주입: 2칸/4칸 지원
+    function fixMetaTables() {
+      var root = document.querySelector('#editorHost .toastui-editor-contents');
+      if (!root) return;
+
+      root.querySelectorAll('table').forEach(function (t) {
+        if (t.querySelector('colgroup')) return; // 이미 있으면 스킵
+        var first = t.querySelector('tr');
+        if (!first) return;
+
+        var cols = first.children ? first.children.length : 0;
+        if (cols !== 2 && cols !== 4) return;
+
+        // “레이블(th) → 값(td)” 패턴인지 대략 체크
+        var thCnt = first.querySelectorAll('th').length;
+        if (cols === 2 && thCnt !== 1) return;       // [th][td]
+        if (cols === 4 && thCnt !== 2) return;       // [th][td][th][td]
+
+        var cg = document.createElement('colgroup');
+        if (cols === 2) {
+          cg.innerHTML = '<col style="width:14rem"><col>';
+          t.setAttribute('data-meta', '1');
+        } else {
+          cg.innerHTML = '<col style="width:14rem"><col><col style="width:14rem"><col>';
+          t.setAttribute('data-meta', '1');
+        }
+        t.insertBefore(cg, t.firstChild);
+      });
     }
 
     function forceFillHeights(){
@@ -134,7 +167,6 @@
         var rect = host.getBoundingClientRect();
         var vpH  = window.innerHeight || document.documentElement.clientHeight;
 
-        // 하단 액션바 위까지 안전 높이
         var bar = document.querySelector('.approval-write-page .actions-bar:last-of-type');
         var SAFE = 220, MIN = 420, MAX = 1600;
         var limitBottom = bar ? bar.getBoundingClientRect().top - 12 : vpH - 12;
@@ -147,7 +179,7 @@
       } catch(e){ console.warn('[approval-write] autoSizeEditor failed', e); }
     }
 
-    /* ===== 코스트시트 템플릿 (표가 안뜨던 문제 수정) ===== */
+    /* ===== 코스트시트 템플릿 ===== */
     function renderCostSheet(rowCount, fluid){
       var headers = ["순번","공정","구분","일자","업체명","품명","규격","단위","수량",
                      "재료단가","재료금액","노무단가","노무금액","경비단가","경비금액","합계단가","합계금액","비고"];
@@ -179,11 +211,10 @@
              'data-template="cost-sheet">'+colgroup+thead+'<tbody>'+rows+'</tbody></table></div>';
     }
 
-    // 매크로 확장: 주석/태그 모두 지원, fluid 옵션 안전하게 판별
+    // 매크로 확장: <!-- @COST_SHEET rows=20 [fluid] -->, <cost-sheet rows="20" [fluid] />
     function expandMacros(src){
       if(!src) return '';
 
-      // 1) 주석 매크로 <!-- @COST_SHEET rows=20 [fluid] -->
       src = src.replace(/<!--\s*@COST_SHEET\b([^>]*)-->/gi, function(match, attrs){
         var mRows = /rows\s*=\s*(\d+)/i.exec(attrs || '');
         var rows  = mRows ? parseInt(mRows[1],10) : 20;
@@ -191,7 +222,6 @@
         return renderCostSheet(rows, hasFluid);
       });
 
-      // 2) 태그 매크로 <cost-sheet rows="20" [fluid] />
       src = src.replace(/<cost-sheet\b([^>]*)\/?>/gi, function(match, attrs){
         var mRows = /rows\s*=\s*["']?(\d+)["']?/i.exec(attrs || '');
         var rows  = mRows ? parseInt(mRows[1],10) : 20;
@@ -232,6 +262,7 @@
       if (editor && editor.setHTML) {
         editor.setHTML(html || '');
         fluidizeEditorContent();
+        fixMetaTables();      // 추가: 즉시 메타표 보정
         forceFillHeights();
         autoSizeEditor();
       } else {
@@ -257,7 +288,7 @@
       var contentHtml = (editor && editor.getHTML && $.trim(editor.getHTML())) || '';
       if (!title) return {ok:false,msg:'제목을 입력하세요.'};
       if (!formCode) return {ok:false,msg:'양식을 선택하세요.'};
-      if (status === 'SUBMITTED' && approvers.length === 0) return {ok:false,msg:'결재선을 지정하세요.'};
+      if ((status === 'SUBMITTED' || status === 'INPROG') && approvers.length === 0) return {ok:false,msg:'결재선을 지정하세요.'};
       if (!contentHtml) return {ok:false,msg:'본문을 작성하세요.'};
       return {ok:true,title:title,formCode:formCode,contentHtml:contentHtml};
     }
@@ -344,7 +375,7 @@
         }
       });
 
-      // 임시저장 / 상신
+      // 임시저장 / 상신  (백엔드가 DRAFT/INPROG만 받으면 문자열만 바꿔도 됨)
       $('#btnSaveTemp').on('click', function(e){ e.preventDefault(); if (!SUBMITTING) submitDoc('TEMP'); });
       $('#btnSubmit').on('click',   function(e){ e.preventDefault(); if (!SUBMITTING) submitDoc('SUBMITTED'); });
 
@@ -388,7 +419,7 @@
         return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
       }
 
-      // /api/approvers → [{id,name,dept}] (백엔드에서 emp 테이블 조회)
+      // /api/approvers → [{id,name,dept}]
       async function fetchApprovers(keyword) {
         var q = (keyword || '').trim();
         var url = q ? ('/api/approvers?q=' + encodeURIComponent(q)) : '/api/approvers';
@@ -461,6 +492,18 @@
         if ($('#approverIds').length) $('#approverIds').val(approvers.map(function(a){ return a.id; }).join(','));
         if ($('#selectedApproverCount').length) $('#selectedApproverCount').text(approvers.length ? (approvers.length+'명') : '미지정');
       }
+
+      /* ===== 드래프터 부서 폴백 표시 (/api/me) ===== */
+      fetch('/api/me', {headers:{'Accept':'application/json'}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(me){
+          if (!me) return;
+          var el = document.getElementById('drafterDept');
+          if (el && (!el.textContent || el.textContent.trim() === '-' )) {
+            el.textContent = me.deptNm || '-';
+          }
+        })
+        .catch(function(){ /* ignore */ });
     });
   }
 })();
